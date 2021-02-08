@@ -1,0 +1,11 @@
+version: '2'
+services:
+  postgres:
+    image: postgres:13.1-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=stonebank
+      - POSTGRES_USER=stonebank
+      - POSTGRES_PASSWORD=stonebank
+      - MAX_CONNECTIONS=100
