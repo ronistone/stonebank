@@ -15,6 +15,6 @@ interface AccountService {
     @Transactional
     fun withdraw(accountId: UUID, transactionDTO: TransactionDTO): Account
     @Transactional
-    fun transfer(accountId: UUID, transactionDTO: TransactionDTO): Account
+    fun transfer(transactionDTO: TransactionDTO): Account
     fun getAccountByDocument(document: String?): Account
 }

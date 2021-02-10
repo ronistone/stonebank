@@ -55,9 +55,4 @@ class AccountController(
         return accountService.withdraw(id, transactionDTO).toDTO()
     }
 
-    @PutMapping(path = ["/{id}/transfer"])
-    fun transfer(@PathVariable id: UUID, @RequestBody transactionDTO: TransactionDTO): AccountDTO {
-        return accountService.transfer(id, transactionDTO).toDTO()
-    }
-
 }

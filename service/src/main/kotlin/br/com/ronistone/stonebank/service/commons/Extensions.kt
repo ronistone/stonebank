@@ -24,7 +24,8 @@ fun Transaction.toDTO() = TransactionDTO(
     amount = this.amount,
     receiver = if (this.receiver?.id != null) AccountDTO(id = this.receiver?.id) else null,
     payer = if (this.payer?.id != null) AccountDTO(id = this.payer?.id) else null,
-    createdAt = this.createdAt
+    createdAt = this.createdAt,
+    status = this.status
 )
 
 fun Account.toDTO() = AccountDTO(
@@ -39,7 +40,8 @@ fun TransactionDTO.toEntity() = Transaction(
     type = this.type,
     amount = this.amount,
     receiver = if (this.receiver?.id != null) Account(id = this.receiver?.id) else null,
-    payer = if (this.payer?.id != null) Account(id = this.payer?.id) else null
+    payer = if (this.payer?.id != null) Account(id = this.payer?.id) else null,
+    status = this.status
 )
 
 fun TransactionDTO.copyWithExample(example: TransactionDTO) = TransactionDTO(
@@ -47,7 +49,16 @@ fun TransactionDTO.copyWithExample(example: TransactionDTO) = TransactionDTO(
     type = example.type ?: this.type,
     amount = example.amount ?: this.amount,
     receiver = example.receiver ?: this.receiver,
-    payer = example.payer ?: this.payer
+    payer = example.payer ?: this.payer,
+    status = example.status ?: this.status
+)
+fun Transaction.copyWithExample(example: Transaction) = Transaction(
+    id = example.id ?: this.id,
+    type = example.type ?: this.type,
+    amount = example.amount ?: this.amount,
+    receiver = example.receiver ?: this.receiver,
+    payer = example.payer ?: this.payer,
+    status = example.status ?: this.status
 )
 
 //fun AccountDTO.toEntity() = Account(

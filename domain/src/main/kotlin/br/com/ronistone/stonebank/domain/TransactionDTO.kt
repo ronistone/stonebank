@@ -9,5 +9,6 @@ data class TransactionDTO(
     val amount: BigDecimal? = null,
     val receiver: AccountDTO? = null,
     val payer: AccountDTO? = null,
-    val createdAt: Date? = null
+    val createdAt: Date? = null,
+    val status: TransactionStatus? = null
 )

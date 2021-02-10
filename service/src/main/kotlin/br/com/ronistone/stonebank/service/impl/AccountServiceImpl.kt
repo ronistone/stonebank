@@ -107,8 +107,8 @@ class AccountServiceImpl(
     }
 
     @Transactional
-    override fun transfer(accountId: UUID, transactionDTO: TransactionDTO): Account {
-        if(transactionDTO.receiver == null || transactionDTO.receiver!!.id == null || transactionDTO.receiver!!.id == accountId) {
+    override fun transfer(transactionDTO: TransactionDTO): Account {
+        if(isInvalidAccountsToTransaction(transactionDTO)) {
             throw ValidationException(Error.TRANSACTIONS_INVALID)
         }
         val receiverAccount = accountRepository.findById(transactionDTO.receiver!!.id!!)
@@ -117,7 +117,13 @@ class AccountServiceImpl(
             throw ValidationException(Error.ACCOUNT_RECEIVER_NOT_FOUND)
         }
 
-        return doOperation(accountId, transactionDTO) { account: Account ->
+        val transaction = transactionService.getTransaction(transactionDTO.id!!)
+
+        if(transaction.isEmpty) {
+            throw ValidationException(Error.TRANSACTIONS_NOT_FOUND)
+        }
+
+        return doOperation(transactionDTO.payer!!.id!!, transactionDTO.copyWithExample(TransactionDTO(id=transaction.get().id))) { account: Account ->
             checkSufficientFunds(account, transactionDTO)
             val transaction = transactionService.transfer(account, transactionDTO.copyWithExample(TransactionDTO( payer = account.toDTO())).toEntity())
             account.amount = account.amount!!.minus(transaction.amount!!)
@@ -130,6 +136,12 @@ class AccountServiceImpl(
             accountRepository.save(account)
         }
     }
+
+    private fun isInvalidAccountsToTransaction(transactionDTO: TransactionDTO) =
+        hasInvalidAccount(transactionDTO.receiver) || hasInvalidAccount(transactionDTO.payer)
+                || transactionDTO.receiver!!.id == transactionDTO.payer!!.id
+
+    private fun hasInvalidAccount(accountDTO: AccountDTO?) = accountDTO?.id == null
 
     private fun doOperation(accountId: UUID, transactionDTO: TransactionDTO, operation: (Account) -> Account): Account {
         val account = accountRepository.findById(accountId)

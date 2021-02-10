@@ -27,6 +27,10 @@ data class Transaction(
         @Enumerated(EnumType.STRING)
         val type: TransactionType? = null,
 
+        @Column(name= "STATUS")
+        @Enumerated(EnumType.STRING)
+        val status: TransactionStatus? = null,
+
         @Column(name = "AMOUNT")
         val amount: BigDecimal? = null,
 
