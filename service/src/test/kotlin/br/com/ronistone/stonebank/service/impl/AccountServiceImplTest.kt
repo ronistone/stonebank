@@ -211,83 +211,109 @@ class AccountServiceImplTest {
 
     }
 
-//    @Test
-//    fun `transfer invalid informations throw exception`() {
-//        val accountService = accountServiceImpl()
-//
-//        try {
-//            accountService.transfer(UUID.randomUUID(), TransactionDTO())
-//            fail("Expected validation exception")
-//        } catch (ex: ValidationException) {
-//            assertThat(ex.errors)
-//                .hasSize(1)
-//                .contains(Error.TRANSACTIONS_INVALID)
-//        }
-//    }
-//
-//    @Test
-//    fun `transfer receiver account not found throw exception`() {
-//        val accountRepository = mock(AccountRepository::class.java)
-//        val accountService = accountServiceImpl(accountRepository = accountRepository)
-//
-//        `when`(accountRepository.findById(any(UUID::class.java)))
-//            .thenReturn(Optional.empty())
-//
-//        try {
-//            accountService.transfer(UUID.randomUUID(), TransactionDTO( receiver = AccountDTO(id = UUID.randomUUID())))
-//            fail("Expected validation exception")
-//        } catch (ex: ValidationException) {
-//            assertThat(ex.errors)
-//                .hasSize(1)
-//                .contains(Error.ACCOUNT_RECEIVER_NOT_FOUND)
-//        }
-//    }
-//
-//    @Test
-//    fun `transfer invalid transfer amount throw exception`() {
-//        val accountRepository = mock(AccountRepository::class.java)
-//        val accountService = accountServiceImpl(accountRepository = accountRepository)
-//
-//        val receiver = AccountDTO(id = UUID.randomUUID())
-//
-//        `when`(accountRepository.findById(eq(receiver.id!!)))
-//            .thenReturn(Optional.of(Account(id = receiver.id)))
-//
-//        try {
-//            accountService.transfer(UUID.randomUUID(), TransactionDTO( receiver = receiver))
-//            fail("Expected validation exception")
-//        } catch (ex: ValidationException) {
-//            assertThat(ex.errors)
-//                .hasSize(1)
-//                .contains(Error.INVALID_AMOUNT)
-//        }
-//    }
-//
-//    @Test
-//    fun `transfer success throw exception`() {
-//        val accountRepository = mock(AccountRepository::class.java)
-//        val transactionService = mock(TransactionService::class.java)
-//        val accountService = accountServiceImpl(accountRepository = accountRepository, transactionService = transactionService)
-//
-//        val receiver = Account(id = UUID.randomUUID(), amount = BigDecimal.ZERO, customer = Customer())
-//        val payer = Account(id = UUID.randomUUID(), amount = BigDecimal.TEN, customer = Customer())
-//
-//        `when`(accountRepository.findById(eq(receiver.id!!)))
-//            .thenReturn(Optional.of(receiver))
-//
-//        `when`(accountRepository.findById(eq(payer.id!!)))
-//            .thenReturn(Optional.of(payer))
-//
-//        `when`(transactionService.transfer(eq(payer), any(Transaction::class.java)))
-//            .thenReturn(Transaction(amount = BigDecimal.TEN))
-//
-//        `when`(accountRepository.save(any(Account::class.java)))
-//            .thenReturn(Account(id = UUID.randomUUID()))
-//
-//        accountService.transfer(payer.id!!, TransactionDTO(receiver = receiver.toDTO(), amount = BigDecimal.TEN))
-//
-//        verify(accountRepository, times(2)).save(any(Account::class.java))
-//    }
+    @Test
+    fun `transfer invalid informations throw exception`() {
+        val accountService = accountServiceImpl()
+
+        try {
+            accountService.transfer(TransactionDTO(payer = AccountDTO(id = UUID.randomUUID())))
+            fail("Expected validation exception")
+        } catch (ex: ValidationException) {
+            assertThat(ex.errors)
+                .hasSize(1)
+                .contains(Error.TRANSACTIONS_INVALID)
+        }
+    }
+
+    @Test
+    fun `transfer receiver account not found throw exception`() {
+        val accountRepository = mock(AccountRepository::class.java)
+        val accountService = accountServiceImpl(accountRepository = accountRepository)
+
+        `when`(accountRepository.findById(any(UUID::class.java)))
+            .thenReturn(Optional.empty())
+
+        try {
+            accountService.transfer(TransactionDTO(payer = AccountDTO(id = UUID.randomUUID()), receiver = AccountDTO(id = UUID.randomUUID())))
+            fail("Expected validation exception")
+        } catch (ex: ValidationException) {
+            assertThat(ex.errors)
+                .hasSize(1)
+                .contains(Error.ACCOUNT_RECEIVER_NOT_FOUND)
+        }
+    }
+
+    @Test
+    fun `transfer transaction not found throw exception`() {
+        val accountRepository = mock(AccountRepository::class.java)
+        val accountService = accountServiceImpl(accountRepository = accountRepository)
+
+        val receiver = AccountDTO(id = UUID.randomUUID())
+
+        `when`(accountRepository.findById(eq(receiver.id!!)))
+            .thenReturn(Optional.of(Account(id = receiver.id)))
+
+        try {
+            accountService.transfer(TransactionDTO(id = UUID.randomUUID(), payer = AccountDTO(id = UUID.randomUUID()), receiver = receiver))
+            fail("Expected validation exception")
+        } catch (ex: ValidationException) {
+            assertThat(ex.errors)
+                .hasSize(1)
+                .contains(Error.TRANSACTIONS_NOT_FOUND)
+        }
+    }
+
+    @Test
+    fun `transfer invalid transfer amount throw exception`() {
+        val accountRepository = mock(AccountRepository::class.java)
+        val transactionService = mock(TransactionService::class.java)
+        val accountService = accountServiceImpl(accountRepository = accountRepository, transactionService = transactionService)
+
+        val receiver = AccountDTO(id = UUID.randomUUID())
+
+        `when`(accountRepository.findById(eq(receiver.id!!)))
+            .thenReturn(Optional.of(Account(id = receiver.id)))
+        `when`(transactionService.getTransaction(any(UUID::class.java)))
+            .thenReturn(Optional.of(Transaction()))
+
+        try {
+            accountService.transfer(TransactionDTO(id = UUID.randomUUID(), payer = AccountDTO(id = UUID.randomUUID()), receiver = receiver))
+            fail("Expected validation exception")
+        } catch (ex: ValidationException) {
+            assertThat(ex.errors)
+                .hasSize(1)
+                .contains(Error.INVALID_AMOUNT)
+        }
+    }
+
+    @Test
+    fun `transfer success throw exception`() {
+        val accountRepository = mock(AccountRepository::class.java)
+        val transactionService = mock(TransactionService::class.java)
+        val accountService = accountServiceImpl(accountRepository = accountRepository, transactionService = transactionService)
+
+        val receiver = Account(id = UUID.randomUUID(), amount = BigDecimal.ZERO, customer = Customer())
+        val payer = Account(id = UUID.randomUUID(), amount = BigDecimal.TEN, customer = Customer())
+
+        `when`(accountRepository.findById(eq(receiver.id!!)))
+            .thenReturn(Optional.of(receiver))
+
+        `when`(accountRepository.findById(eq(payer.id!!)))
+            .thenReturn(Optional.of(payer))
+
+        `when`(transactionService.transfer(eq(payer), any(Transaction::class.java)))
+            .thenReturn(Transaction(amount = BigDecimal.TEN))
+
+        `when`(accountRepository.save(any(Account::class.java)))
+            .thenReturn(Account(id = UUID.randomUUID()))
+
+        `when`(transactionService.getTransaction(any(UUID::class.java)))
+            .thenReturn(Optional.of(Transaction()))
+
+        accountService.transfer(TransactionDTO(id = UUID.randomUUID(), payer = AccountDTO(id = payer.id!!), receiver = receiver.toDTO(), amount = BigDecimal.TEN))
+
+        verify(accountRepository, times(2)).save(any(Account::class.java))
+    }
 
     @Test
     fun `deposit account not found throw exception`() {

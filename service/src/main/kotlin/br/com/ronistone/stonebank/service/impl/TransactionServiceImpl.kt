@@ -23,7 +23,7 @@ import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 @Service
 class TransactionServiceImpl(
     val transactionRepository: TransactionRepository,
-    val kafkaTemplate: KafkaTemplate<JvmType.Object, Transaction>,
+    val kafkaTemplate: KafkaTemplate<Any, Transaction>,
     @Value("\${stonebank.kafka.topic.transaction:}") val transactionTopicName: String
 ) : TransactionService {
 
