@@ -1,7 +1,6 @@
 package br.com.ronistone.stonebank.service.impl
 
 import br.com.ronistone.stonebank.domain.Account
-import br.com.ronistone.stonebank.domain.AccountDTO
 import br.com.ronistone.stonebank.domain.Customer
 import br.com.ronistone.stonebank.domain.Transaction
 import br.com.ronistone.stonebank.domain.TransactionDTO
@@ -35,12 +34,12 @@ class AccountServiceImpl(
         return accountRepository.findByCustomerDocument(document) ?: throw ValidationException(Error.ACCOUNT_NOT_FOUND)
     }
 
-    override fun createAccount(accountDTO: AccountDTO): Account {
-        if(accountDTO.name == null || accountDTO.document == null) {
+    override fun createAccount(account: Account): Account {
+        if(account.customer == null || account.customer?.name == null || account.customer?.document == null) {
             throw ValidationException(Error.INVALID_CUSTOMER_INFORMATIONS)
         }
 
-        val customerCreated = accountRepository.findByCustomerDocument(accountDTO.document!!)
+        val customerCreated = accountRepository.findByCustomerDocument(account.customer?.document!!)
 
         if(customerCreated != null) {
             throw ValidationException(Error.CUSTOMER_ALREADY_HAS_AN_ACCOUNT)
@@ -48,19 +47,19 @@ class AccountServiceImpl(
 
         var customer = Customer(
             id = null,
-            name = accountDTO.name!!,
-            document = accountDTO.document!!
+            name = account.customer!!.name,
+            document = account.customer!!.document
         )
 
         customer = customerRepository.save(customer)
 
-        val account = Account(
+        val newAccount = Account(
             id = null,
-            amount = accountDTO.amount ?: BigDecimal.ZERO,
+            amount = account.amount ?: BigDecimal.ZERO,
             customer = customer
         )
 
-        return accountRepository.save(account)
+        return accountRepository.save(newAccount)
     }
 
     override fun getBalance(accountId: UUID): Account {
@@ -87,45 +86,45 @@ class AccountServiceImpl(
     }
 
     @Transactional
-    override fun deposit(accountId: UUID, transactionDTO: TransactionDTO): Account {
-        return doOperation(accountId, transactionDTO) { account: Account ->
-            val transaction = transactionService.deposit(account, transactionDTO.copyWithExample(TransactionDTO( receiver = account.toDTO())).toEntity())
+    override fun deposit(accountId: UUID, transactionDeposit: Transaction): Account {
+        return doOperation(accountId, transactionDeposit) { account: Account ->
+            val transaction = transactionService.deposit(account, transactionDeposit.copyWithExample(Transaction(receiver = account)))
             account.amount = account.amount!!.plus(transaction.amount!!)
             accountRepository.save(account)
         }
     }
 
     @Transactional
-    override fun withdraw(accountId: UUID, transactionDTO: TransactionDTO): Account {
+    override fun withdraw(accountId: UUID, transactionWithdraw: Transaction): Account {
 
-        return doOperation(accountId, transactionDTO) { account: Account ->
-            checkSufficientFunds(account, transactionDTO)
-            val transaction = transactionService.withdraw(account, transactionDTO.copyWithExample(TransactionDTO( payer = account.toDTO())).toEntity())
+        return doOperation(accountId, transactionWithdraw) { account: Account ->
+            checkSufficientFunds(account, transactionWithdraw)
+            val transaction = transactionService.withdraw(account, transactionWithdraw.copyWithExample(Transaction( payer = account)))
             account.amount = account.amount!!.minus(transaction.amount!!)
             accountRepository.save(account)
         }
     }
 
     @Transactional
-    override fun transfer(transactionDTO: TransactionDTO): Account {
-        if(isInvalidAccountsToTransaction(transactionDTO)) {
+    override fun transfer(transactionTransfer: Transaction): Account {
+        if(isInvalidAccountsToTransaction(transactionTransfer)) {
             throw ValidationException(Error.TRANSACTIONS_INVALID)
         }
-        val receiverAccount = accountRepository.findById(transactionDTO.receiver!!.id!!)
+        val receiverAccount = accountRepository.findById(transactionTransfer.receiver!!.id!!)
 
         if(receiverAccount.isEmpty) {
             throw ValidationException(Error.ACCOUNT_RECEIVER_NOT_FOUND)
         }
 
-        val transaction = transactionService.getTransaction(transactionDTO.id!!)
+        val transactionOld = transactionService.getTransaction(transactionTransfer.id!!)
 
-        if(transaction.isEmpty) {
+        if(transactionOld.isEmpty) {
             throw ValidationException(Error.TRANSACTIONS_NOT_FOUND)
         }
 
-        return doOperation(transactionDTO.payer!!.id!!, transactionDTO.copyWithExample(TransactionDTO(id=transaction.get().id))) { account: Account ->
-            checkSufficientFunds(account, transactionDTO)
-            val transaction = transactionService.transfer(account, transactionDTO.copyWithExample(TransactionDTO( payer = account.toDTO())).toEntity())
+        return doOperation(transactionTransfer.payer!!.id!!, transactionTransfer.copyWithExample(Transaction(id=transactionOld.get().id))) { account: Account ->
+            checkSufficientFunds(account, transactionTransfer)
+            val transaction = transactionService.transfer(account, transactionTransfer.copyWithExample(Transaction( payer = account)))
             account.amount = account.amount!!.minus(transaction.amount!!)
 
             receiverAccount.get().let {
@@ -137,15 +136,15 @@ class AccountServiceImpl(
         }
     }
 
-    private fun isInvalidAccountsToTransaction(transactionDTO: TransactionDTO) =
-        hasInvalidAccount(transactionDTO.receiver) || hasInvalidAccount(transactionDTO.payer)
-                || transactionDTO.receiver!!.id == transactionDTO.payer!!.id
+    private fun isInvalidAccountsToTransaction(transaction: Transaction) =
+        hasInvalidAccount(transaction.receiver) || hasInvalidAccount(transaction.payer)
+                || transaction.receiver!!.id == transaction.payer!!.id
 
-    private fun hasInvalidAccount(accountDTO: AccountDTO?) = accountDTO?.id == null
+    private fun hasInvalidAccount(account: Account?) = account?.id == null
 
-    private fun doOperation(accountId: UUID, transactionDTO: TransactionDTO, operation: (Account) -> Account): Account {
+    private fun doOperation(accountId: UUID, transaction: Transaction, operation: (Account) -> Account): Account {
         val account = accountRepository.findById(accountId)
-        checkValidValue(transactionDTO)
+        checkValidValue(transaction)
 
         if(account.isPresent) {
             account.get().let {
@@ -155,17 +154,17 @@ class AccountServiceImpl(
         throw ValidationException(Error.ACCOUNT_NOT_FOUND)
     }
 
-    private fun checkValidValue(transactionDTO: TransactionDTO) {
-        if (transactionDTO.amount == null || !transactionDTO.amount!!.isGreaterThan(BigDecimal.ZERO)) {
+    private fun checkValidValue(transaction: Transaction) {
+        if (transaction.amount == null || !transaction.amount!!.isGreaterThan(BigDecimal.ZERO)) {
             throw ValidationException(Error.INVALID_AMOUNT)
         }
     }
 
     private fun checkSufficientFunds(
         it: Account,
-        transactionDTO: TransactionDTO
+        transaction: Transaction
     ) {
-        if (it.amount!!.isLessThan(transactionDTO.amount!!)) {
+        if (it.amount!!.isLessThan(transaction.amount!!)) {
             throw ValidationException(Error.INSUFFICIENT_FUNDS)
         }
     }

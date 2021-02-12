@@ -63,7 +63,7 @@ class AccountServiceImplTest {
         val accountService = accountServiceImpl()
 
         try {
-            accountService.createAccount(AccountDTO())
+            accountService.createAccount(Account())
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -81,10 +81,10 @@ class AccountServiceImplTest {
             .thenReturn(Account(id = UUID.randomUUID()))
 
         try {
-            accountService.createAccount(AccountDTO(
+            accountService.createAccount(Account( customer = Customer(
                 name = NAME,
                 document = DOCUMENT
-            ))
+            )))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -104,10 +104,10 @@ class AccountServiceImplTest {
         `when`(accountRepository.save(any(Account::class.java)))
             .thenReturn(Account(id = UUID.randomUUID()))
 
-        accountService.createAccount(AccountDTO(
+        accountService.createAccount(Account(customer = Customer(
             name = NAME,
             document = DOCUMENT
-        ))
+        )))
 
         verify(accountRepository, times(1)).save(any(Account::class.java))
         verify(customerRepository, times(1)).save(any(Customer::class.java))
@@ -216,7 +216,7 @@ class AccountServiceImplTest {
         val accountService = accountServiceImpl()
 
         try {
-            accountService.transfer(TransactionDTO(payer = AccountDTO(id = UUID.randomUUID())))
+            accountService.transfer(Transaction(payer = Account(id = UUID.randomUUID())))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -234,7 +234,7 @@ class AccountServiceImplTest {
             .thenReturn(Optional.empty())
 
         try {
-            accountService.transfer(TransactionDTO(payer = AccountDTO(id = UUID.randomUUID()), receiver = AccountDTO(id = UUID.randomUUID())))
+            accountService.transfer(Transaction(payer = Account(id = UUID.randomUUID()), receiver = Account(id = UUID.randomUUID())))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -248,13 +248,13 @@ class AccountServiceImplTest {
         val accountRepository = mock(AccountRepository::class.java)
         val accountService = accountServiceImpl(accountRepository = accountRepository)
 
-        val receiver = AccountDTO(id = UUID.randomUUID())
+        val receiver = Account(id = UUID.randomUUID())
 
         `when`(accountRepository.findById(eq(receiver.id!!)))
             .thenReturn(Optional.of(Account(id = receiver.id)))
 
         try {
-            accountService.transfer(TransactionDTO(id = UUID.randomUUID(), payer = AccountDTO(id = UUID.randomUUID()), receiver = receiver))
+            accountService.transfer(Transaction(id = UUID.randomUUID(), payer = Account(id = UUID.randomUUID()), receiver = receiver))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -269,7 +269,7 @@ class AccountServiceImplTest {
         val transactionService = mock(TransactionService::class.java)
         val accountService = accountServiceImpl(accountRepository = accountRepository, transactionService = transactionService)
 
-        val receiver = AccountDTO(id = UUID.randomUUID())
+        val receiver = Account(id = UUID.randomUUID())
 
         `when`(accountRepository.findById(eq(receiver.id!!)))
             .thenReturn(Optional.of(Account(id = receiver.id)))
@@ -277,7 +277,7 @@ class AccountServiceImplTest {
             .thenReturn(Optional.of(Transaction()))
 
         try {
-            accountService.transfer(TransactionDTO(id = UUID.randomUUID(), payer = AccountDTO(id = UUID.randomUUID()), receiver = receiver))
+            accountService.transfer(Transaction(id = UUID.randomUUID(), payer = Account(id = UUID.randomUUID()), receiver = receiver))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -310,7 +310,7 @@ class AccountServiceImplTest {
         `when`(transactionService.getTransaction(any(UUID::class.java)))
             .thenReturn(Optional.of(Transaction()))
 
-        accountService.transfer(TransactionDTO(id = UUID.randomUUID(), payer = AccountDTO(id = payer.id!!), receiver = receiver.toDTO(), amount = BigDecimal.TEN))
+        accountService.transfer(Transaction(id = UUID.randomUUID(), payer = Account(id = payer.id!!), receiver = receiver, amount = BigDecimal.TEN))
 
         verify(accountRepository, times(2)).save(any(Account::class.java))
     }
@@ -319,10 +319,10 @@ class AccountServiceImplTest {
     fun `deposit account not found throw exception`() {
         val accountService = accountServiceImpl()
 
-        val receiver = AccountDTO(id = UUID.randomUUID())
+        val receiver = Account(id = UUID.randomUUID())
 
         try {
-            accountService.deposit(UUID.randomUUID(), TransactionDTO( receiver = receiver, amount = BigDecimal.TEN))
+            accountService.deposit(UUID.randomUUID(), Transaction( receiver = receiver, amount = BigDecimal.TEN))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -337,7 +337,7 @@ class AccountServiceImplTest {
         val transactionService = mock(TransactionService::class.java)
         val accountService = accountServiceImpl(accountRepository = accountRepository, transactionService = transactionService)
 
-        val receiver = AccountDTO(id = UUID.randomUUID())
+        val receiver = Account(id = UUID.randomUUID())
 
         `when`(accountRepository.findById(any(UUID::class.java)))
             .thenReturn(Optional.of(Account(id = UUID.randomUUID(), amount = BigDecimal.ZERO)))
@@ -346,7 +346,7 @@ class AccountServiceImplTest {
         `when`(accountRepository.save(any(Account::class.java)))
             .thenReturn(Account(id = UUID.randomUUID()))
 
-        accountService.deposit(UUID.randomUUID(), TransactionDTO( receiver = receiver, amount = BigDecimal.TEN))
+        accountService.deposit(UUID.randomUUID(), Transaction( receiver = receiver, amount = BigDecimal.TEN))
 
         verify(accountRepository, times(1)).save(any(Account::class.java))
     }
@@ -357,7 +357,7 @@ class AccountServiceImplTest {
         val transactionService = mock(TransactionService::class.java)
         val accountService = accountServiceImpl(accountRepository = accountRepository, transactionService = transactionService)
 
-        val receiver = AccountDTO(id = UUID.randomUUID())
+        val receiver = Account(id = UUID.randomUUID())
 
         `when`(accountRepository.findById(any(UUID::class.java)))
             .thenReturn(Optional.of(Account(id = UUID.randomUUID(), amount = BigDecimal.TEN)))
@@ -366,7 +366,7 @@ class AccountServiceImplTest {
         `when`(accountRepository.save(any(Account::class.java)))
             .thenReturn(Account(id = UUID.randomUUID()))
 
-        accountService.withdraw(UUID.randomUUID(), TransactionDTO( receiver = receiver, amount = BigDecimal.TEN))
+        accountService.withdraw(UUID.randomUUID(), Transaction( receiver = receiver, amount = BigDecimal.TEN))
 
         verify(accountRepository, times(1)).save(any(Account::class.java))
     }
@@ -377,7 +377,7 @@ class AccountServiceImplTest {
         val transactionService = mock(TransactionService::class.java)
         val accountService = accountServiceImpl(accountRepository = accountRepository, transactionService = transactionService)
 
-        val receiver = AccountDTO(id = UUID.randomUUID())
+        val receiver = Account(id = UUID.randomUUID())
 
         `when`(accountRepository.findById(any(UUID::class.java)))
             .thenReturn(Optional.of(Account(id = UUID.randomUUID(), amount = BigDecimal.ZERO)))
@@ -385,7 +385,7 @@ class AccountServiceImplTest {
             .thenReturn(Transaction(amount = BigDecimal.TEN))
 
         try {
-            accountService.withdraw(UUID.randomUUID(), TransactionDTO(receiver = receiver, amount = BigDecimal.TEN))
+            accountService.withdraw(UUID.randomUUID(), Transaction(receiver = receiver, amount = BigDecimal.TEN))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)

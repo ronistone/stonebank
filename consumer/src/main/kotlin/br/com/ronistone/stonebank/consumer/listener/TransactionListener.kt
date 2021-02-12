@@ -14,9 +14,7 @@ class TransactionListener(
 
     @KafkaListener(topics = ["\${stonebank.kafka.transaction.topic}"], groupId = "\${spring.kafka.consumer.group-id}")
     fun listen(transaction: Transaction){
-
-        accountService.transfer(transactionDTO = transaction.toDTO())
-
+        accountService.transfer(transaction)
     }
 
 }

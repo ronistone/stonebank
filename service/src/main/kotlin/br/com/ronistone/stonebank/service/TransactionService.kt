@@ -19,6 +19,6 @@ interface TransactionService {
     @Transactional
     fun transfer(account: Account, transaction: Transaction): Transaction
     @Transactional
-    fun createTransfer(accountId: UUID, transactionDTO: TransactionDTO): Transaction
+    fun createTransfer(accountId: UUID, transactionTransfer: Transaction): Transaction
     fun getTransaction(transactionId: UUID): Optional<Transaction>
 }

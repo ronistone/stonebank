@@ -61,14 +61,14 @@ fun Transaction.copyWithExample(example: Transaction) = Transaction(
     status = example.status ?: this.status
 )
 
-//fun AccountDTO.toEntity() = Account(
-//    id = this.id,
-//    customer = Customer(
-//        name = this.name,
-//        document = this.document,
-//    ),
-//    amount = this.amount
-//)
+fun AccountDTO.toEntity() = Account(
+    id = this.id,
+    customer = Customer(
+        name = this.name,
+        document = this.document,
+    ),
+    amount = this.amount
+)
 
 fun <T> String.jsonToObject(t: Class<T>): T =
     Gson().fromJson(this, t)

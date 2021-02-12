@@ -2,7 +2,6 @@ package br.com.ronistone.stonebank.service.impl
 
 import br.com.ronistone.stonebank.domain.Account
 import br.com.ronistone.stonebank.domain.Transaction
-import br.com.ronistone.stonebank.domain.TransactionDTO
 import br.com.ronistone.stonebank.domain.TransactionStatus
 import br.com.ronistone.stonebank.domain.TransactionType
 import br.com.ronistone.stonebank.repository.TransactionRepository
@@ -18,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.util.Optional
 import java.util.UUID
-import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 @Service
 class TransactionServiceImpl(
@@ -51,11 +49,11 @@ class TransactionServiceImpl(
     }
 
     @Transactional
-    override fun createTransfer(accountId: UUID, transactionDTO: TransactionDTO): Transaction {
+    override fun createTransfer(accountId: UUID, transactionTransfer: Transaction): Transaction {
         var transaction = Transaction(
             type = TransactionType.TRANSFER,
-            amount = transactionDTO.amount,
-            receiver = Account(transactionDTO.receiver?.id),
+            amount = transactionTransfer.amount,
+            receiver = Account(transactionTransfer.receiver?.id),
             payer = Account(accountId),
             status = TransactionStatus.CREATED
         )

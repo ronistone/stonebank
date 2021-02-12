@@ -4,6 +4,7 @@ import br.com.ronistone.stonebank.domain.AccountDTO
 import br.com.ronistone.stonebank.domain.TransactionDTO
 import br.com.ronistone.stonebank.service.AccountService
 import br.com.ronistone.stonebank.service.commons.toDTO
+import br.com.ronistone.stonebank.service.commons.toEntity
 import org.springframework.data.repository.query.Param
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -23,7 +24,7 @@ class AccountController(
 
     @PostMapping
     fun createAccount(@RequestBody account: AccountDTO): AccountDTO {
-        return accountService.createAccount(account).toDTO()
+        return accountService.createAccount(account.toEntity()).toDTO()
     }
 
     @GetMapping
@@ -47,12 +48,12 @@ class AccountController(
 
     @PutMapping(path = ["/{id}/deposit"])
     fun deposit(@PathVariable id: UUID, @RequestBody transactionDTO: TransactionDTO): AccountDTO {
-        return accountService.deposit(id, transactionDTO).toDTO()
+        return accountService.deposit(id, transactionDTO.toEntity()).toDTO()
     }
 
     @PutMapping(path = ["/{id}/withdraw"])
     fun withdraw(@PathVariable id: UUID, @RequestBody transactionDTO: TransactionDTO): AccountDTO {
-        return accountService.withdraw(id, transactionDTO).toDTO()
+        return accountService.withdraw(id, transactionDTO.toEntity()).toDTO()
     }
 
 }

@@ -142,7 +142,7 @@ class TransactionServiceImplTest {
         `when`(transactionRepository.save(any(Transaction::class.java)))
             .thenReturn(Transaction())
 
-        transactionServiceImpl.createTransfer(UUID.randomUUID(), TransactionDTO())
+        transactionServiceImpl.createTransfer(UUID.randomUUID(), Transaction())
 
         verify(transactionRepository, times(1)).save(any(Transaction::class.java))
         verify(kafkaTemplate, times(1)).send(anyString(), any(Any::class.java))

@@ -18,7 +18,7 @@ data class Account(
         @Id
         @GeneratedValue( strategy = GenerationType.AUTO )
         @Column(name="ID")
-        val id: UUID?,
+        val id: UUID? = null,
 
         @Column(name="AMOUNT")
         var amount: BigDecimal? = null,
