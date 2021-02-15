@@ -2,6 +2,8 @@ package br.com.ronistone.stonebank.service.commons
 
 import br.com.ronistone.stonebank.domain.Account
 import br.com.ronistone.stonebank.domain.AccountDTO
+import br.com.ronistone.stonebank.domain.BlockList
+import br.com.ronistone.stonebank.domain.BlockListDTO
 import br.com.ronistone.stonebank.domain.Customer
 import br.com.ronistone.stonebank.domain.Transaction
 import br.com.ronistone.stonebank.domain.TransactionDTO
@@ -32,7 +34,13 @@ fun Account.toDTO() = AccountDTO(
     id = this.id,
     name = this.customer?.name,
     document = this.customer?.document,
-    amount = this.amount
+    amount = this.amount,
+    status = this.status
+)
+
+fun BlockList.toDTO() = BlockListDTO(
+        document = this.document,
+        status = this.status
 )
 
 fun TransactionDTO.toEntity() = Transaction(
@@ -67,7 +75,8 @@ fun AccountDTO.toEntity() = Account(
         name = this.name,
         document = this.document,
     ),
-    amount = this.amount
+    amount = this.amount,
+    status = this.status
 )
 
 fun <T> String.jsonToObject(t: Class<T>): T =

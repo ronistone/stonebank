@@ -1,12 +1,13 @@
 package br.com.ronistone.stonebank.domain
 
-import java.util.*
+import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
 import javax.persistence.Table
+
 
 @Entity(name = "customer")
 @Table(name = "CUSTOMER")
@@ -20,5 +21,5 @@ data class Customer(
         var name: String? = null,
 
         @Column(name = "DOCUMENT")
-        var document: String? = null,
+        var document: String? = null
 ) : AuditedEntity()

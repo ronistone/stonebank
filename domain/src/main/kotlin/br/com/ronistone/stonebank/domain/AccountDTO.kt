@@ -7,5 +7,6 @@ data class AccountDTO(
     val id: UUID? = null,
     val name: String? = null,
     val document: String? = null,
-    val amount: BigDecimal? = null
+    val amount: BigDecimal? = null,
+    val status: AccountStatus? = null
 )

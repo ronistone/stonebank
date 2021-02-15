@@ -14,6 +14,7 @@ import br.com.ronistone.stonebank.service.commons.Error
 import br.com.ronistone.stonebank.service.commons.ValidationException
 import br.com.ronistone.stonebank.service.commons.toDTO
 import org.assertj.core.api.Assertions.assertThat
+import org.camunda.bpm.engine.RuntimeService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.mockito.Mockito.`when`
@@ -401,7 +402,8 @@ class AccountServiceImplTest {
     ) = AccountServiceImpl(
         customerRepository = customerRepository ?: mock(CustomerRepository::class.java),
         accountRepository = accountRepository ?: mock(AccountRepository::class.java),
-        transactionService = transactionService ?: mock(TransactionService::class.java)
+        transactionService = transactionService ?: mock(TransactionService::class.java),
+        runtimeService = mock(RuntimeService::class.java)
     )
 
 }

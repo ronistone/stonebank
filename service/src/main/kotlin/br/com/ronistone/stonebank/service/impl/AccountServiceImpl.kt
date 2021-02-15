@@ -1,9 +1,9 @@
 package br.com.ronistone.stonebank.service.impl
 
 import br.com.ronistone.stonebank.domain.Account
+import br.com.ronistone.stonebank.domain.AccountStatus
 import br.com.ronistone.stonebank.domain.Customer
 import br.com.ronistone.stonebank.domain.Transaction
-import br.com.ronistone.stonebank.domain.TransactionDTO
 import br.com.ronistone.stonebank.repository.AccountRepository
 import br.com.ronistone.stonebank.repository.CustomerRepository
 import br.com.ronistone.stonebank.service.AccountService
@@ -13,19 +13,38 @@ import br.com.ronistone.stonebank.service.commons.ValidationException
 import br.com.ronistone.stonebank.service.commons.copyWithExample
 import br.com.ronistone.stonebank.service.commons.isGreaterThan
 import br.com.ronistone.stonebank.service.commons.isLessThan
-import br.com.ronistone.stonebank.service.commons.toDTO
 import br.com.ronistone.stonebank.service.commons.toEntity
+import org.camunda.bpm.engine.RuntimeService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.util.*
+import kotlin.collections.HashMap
 
 @Service
 class AccountServiceImpl(
     val accountRepository: AccountRepository,
     val customerRepository: CustomerRepository,
-    val transactionService: TransactionService
+    val transactionService: TransactionService,
+    val runtimeService: RuntimeService
 ): AccountService {
+
+    companion object {
+        private val CUSTOMER_CREATION = "Customer_Creation"
+    }
+
+    override fun updateStatus(accountId: UUID, accountStatus: AccountStatus): Account {
+        val account = accountRepository.findAccountById(accountId)
+
+        if(account.isPresent) {
+
+            return accountRepository.save(account.get().apply {
+                status = accountStatus
+            })
+
+        }
+        throw ValidationException(Error.ACCOUNT_NOT_FOUND)
+    }
 
     override fun getAccountByDocument(document: String?): Account {
         if(document == null) {
@@ -34,6 +53,7 @@ class AccountServiceImpl(
         return accountRepository.findByCustomerDocument(document) ?: throw ValidationException(Error.ACCOUNT_NOT_FOUND)
     }
 
+    @Transactional
     override fun createAccount(account: Account): Account {
         if(account.customer == null || account.customer?.name == null || account.customer?.document == null) {
             throw ValidationException(Error.INVALID_CUSTOMER_INFORMATIONS)
@@ -53,13 +73,21 @@ class AccountServiceImpl(
 
         customer = customerRepository.save(customer)
 
-        val newAccount = Account(
+        var newAccount = Account(
             id = null,
             amount = account.amount ?: BigDecimal.ZERO,
-            customer = customer
+            customer = customer,
+            status = AccountStatus.PENDING
+        )
+        newAccount = accountRepository.save(newAccount)
+
+        runtimeService.startProcessInstanceByKey(
+                CUSTOMER_CREATION,
+                newAccount.id.toString(),
+                mutableMapOf(Pair("document", newAccount.customer?.document)) as Map<String, Any>?
         )
 
-        return accountRepository.save(newAccount)
+        return newAccount
     }
 
     override fun getBalance(accountId: UUID): Account {

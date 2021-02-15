@@ -1,6 +1,7 @@
 package br.com.ronistone.stonebank.service
 
 import br.com.ronistone.stonebank.domain.Account
+import br.com.ronistone.stonebank.domain.AccountStatus
 import br.com.ronistone.stonebank.domain.Transaction
 import br.com.ronistone.stonebank.domain.TransactionDTO
 import org.springframework.transaction.annotation.Transactional
@@ -16,4 +17,5 @@ interface AccountService {
     @Transactional
     fun transfer(transactionTransfer: Transaction): Account
     fun getAccountByDocument(document: String?): Account
+    fun updateStatus(accountId: UUID, accountStatus: AccountStatus): Account
 }
