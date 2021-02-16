@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: stonebank-application
+  name: stonebank-consumer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: stonebank-application
+      app: stonebank-consumer
   template:
     metadata:
       labels:
-        app: stonebank-application
+        app: stonebank-consumer
     spec:
       containers:
-        - name: stonebank-application
-          image: ronistone/stonebank-application:0.0.4
-          imagePullPolicy: "IfNotPresent"
+        - name: stonebank-consumer
+          image: ronistone/stonebank-consumer:0.0.6
+          imagePullPolicy: "Always"
           ports:
             - containerPort: 8080
           envFrom:

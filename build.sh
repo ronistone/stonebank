@@ -13,9 +13,11 @@ else
     mvn clean install -T4
     docker build -t ronistone/stonebank-application:${VERSION} ./application
     docker build -t ronistone/stonebank-consumer:${VERSION} ./consumer
+    docker build -t ronistone/stonebank-processor:${VERSION} ./processor
 
     push_and_deploy stonebank-application ${VERSION}
     push_and_deploy stonebank-consumer ${VERSION}
+    push_and_deploy stonebank-processor ${VERSION}
 
 
     echo "${VERSION} Deployada!"
