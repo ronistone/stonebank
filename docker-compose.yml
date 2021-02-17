@@ -27,3 +27,7 @@ services:
       - ALLOW_PLAINTEXT_LISTENER=yes
     depends_on:
       - zookeeper
+  consul:
+    image: consul:1.9
+    ports:
+    - '8500:8500'

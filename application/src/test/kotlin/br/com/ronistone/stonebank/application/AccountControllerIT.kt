@@ -76,7 +76,7 @@ class AccountControllerIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.id").value(account.id.toString()))
             .andExpect(jsonPath("$.amount").value(10000))
-            .andExpect(jsonPath("$.document").value(account.document))
+            .andExpect(jsonPath("$.document").value(account.document!!))
     }
 
     @Test
@@ -105,7 +105,7 @@ class AccountControllerIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.id").value(payer.id.toString()))
             .andExpect(jsonPath("$.amount").value(0))
-            .andExpect(jsonPath("$.document").value(payer.document))
+            .andExpect(jsonPath("$.document").value(payer.document!!))
     }
 
     fun doDeposit(account: AccountDTO, payload: String) = this.mockMvc.perform(

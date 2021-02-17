@@ -63,15 +63,8 @@ doApply() {
     else
       SERVICE=$1
       doOperation apply $SERVICE
-#      case $SERVICE in
-#        all) apply $(ls);;
-#        *) apply $SERVICE;;
-#      esac
   fi
 }
-
-
-
 
 if [ -z "$1" ]
   then
