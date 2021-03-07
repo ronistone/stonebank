@@ -39,8 +39,9 @@ It's just a repo for testing technologies, it implements basic operations of a b
  - Local K8s
     - Run minikube see [Minikube Install](https://minikube.sigs.k8s.io/docs/start/)
     - Install helm 3.x see [Helm Installation](https://helm.sh/docs/intro/quickstart/)
-    - After installing helm, run in `deploy` folder `./init-helm-repos.sh` to add all necessary helm repos
-    - With minikube and helm up and running, run in `deploy` folder `./deploy.sh apply all`. This command will deploy all stonebank stack
+    - After installing helm, clone [K8s Manifests](https://github.com/ronistone/k8s-manifests)
+    - In K8s Manifests run `./init-helm-repos.sh` to add all necessary helm repos
+    - In K8s Manifests and with minikube and helm up and running, run `./deploy.sh apply all`. This command will deploy all stonebank stack
     
 
 ### Structure

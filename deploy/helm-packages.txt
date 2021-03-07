@@ -1,2 +1,0 @@
-kafka bitnami/kafka kafka/kafka-values.yaml
-consul hashicorp/consul consul/consul-values.yaml
