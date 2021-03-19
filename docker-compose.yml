@@ -31,3 +31,11 @@ services:
     image: consul:1.9
     ports:
     - '8500:8500'
+  elasticsearch:
+    image: elasticsearch:7.10.1
+    mem_limit: 2g
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    environment:
+      - "discovery.type=single-node"

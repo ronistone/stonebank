@@ -4,9 +4,10 @@ import java.math.BigDecimal
 import java.util.*
 import javax.persistence.*
 
+@EntityListeners(AccountListener::class)
 @Entity(name = "account")
 @Table(name = "ACCOUNT")
-data class Account(
+class Account(
         @Id
         @GeneratedValue( strategy = GenerationType.AUTO )
         @Column(name="ID")
@@ -21,5 +22,8 @@ data class Account(
 
         @Column(name = "STATUS")
         @Enumerated(EnumType.STRING)
-        var status: AccountStatus? = null
-) : AuditedEntity()
+        var status: AccountStatus? = null,
+
+        createdAt: Date? = null,
+        updatedAt: Date? = null
+) : AuditedEntity(createdAt, updatedAt)

@@ -7,13 +7,16 @@ import javax.persistence.Column
 import javax.persistence.MappedSuperclass
 
 @MappedSuperclass
-open class AuditedEntity {
+open class AuditedEntity(
+        createdAt: Date? = null,
+        updateAt: Date? = null,
+){
 
     @CreatedDate
     @Column(name = "CREATED_AT")
-    val createdAt: Date = Date()
+    val createdAt: Date? = createdAt ?: Date()
 
     @LastModifiedDate
     @Column(name = "UPDATED_AT")
-    var updatedAt: Date = Date()
+    var updatedAt: Date? = updateAt ?: Date()
 }
