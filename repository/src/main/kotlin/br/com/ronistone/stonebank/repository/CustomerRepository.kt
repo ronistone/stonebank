@@ -1,11 +1,11 @@
 package br.com.ronistone.stonebank.repository
 
-import br.com.ronistone.stonebank.domain.Customer
+import br.com.ronistone.stonebank.entity.CustomerEntity
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
-import java.util.*
+import java.util.UUID
 
 @Repository
-interface CustomerRepository : JpaRepository<Customer, UUID> {
-    fun findByDocument(document: String): Customer?
+interface CustomerRepository : JpaRepository<CustomerEntity, UUID> {
+    fun findByDocument(document: String): CustomerEntity?
 }

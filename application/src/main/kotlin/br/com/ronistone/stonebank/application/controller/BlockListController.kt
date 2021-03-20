@@ -1,8 +1,8 @@
 package br.com.ronistone.stonebank.application.controller
 
-import br.com.ronistone.stonebank.domain.BlockListDTO
+import br.com.ronistone.stonebank.domain.BlockList
 import br.com.ronistone.stonebank.service.BlockListService
-import br.com.ronistone.stonebank.service.commons.toDTO
+import br.com.ronistone.stonebank.entity.toDTO
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -15,12 +15,12 @@ class BlockListController(
 ) {
 
     @PostMapping(path = ["/{document}/block"])
-    fun block(@PathVariable("document") document: String): BlockListDTO {
+    fun block(@PathVariable("document") document: String): BlockList {
         return blockListService.blockDocument(document).toDTO()
     }
 
     @PostMapping(path = ["/{document}/release"])
-    fun release(@PathVariable("document") document: String): BlockListDTO {
+    fun release(@PathVariable("document") document: String): BlockList {
         return blockListService.releaseDocument(document).toDTO()
     }
 

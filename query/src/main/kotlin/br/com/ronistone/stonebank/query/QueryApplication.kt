@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.kafka.annotation.EnableKafka
 
-@SpringBootApplication(exclude = [ DataSourceAutoConfiguration::class ])
+@SpringBootApplication
 @EnableKafka
 @EnableConfigurationProperties
 class QueryApplication

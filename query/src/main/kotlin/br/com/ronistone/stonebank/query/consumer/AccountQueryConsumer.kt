@@ -1,6 +1,6 @@
 package br.com.ronistone.stonebank.query.consumer
 
-import br.com.ronistone.stonebank.domain.AccountDTO
+import br.com.ronistone.stonebank.domain.Account
 import br.com.ronistone.stonebank.domain.Event
 import br.com.ronistone.stonebank.domain.EventType
 import br.com.ronistone.stonebank.query.model.toDocument
@@ -19,7 +19,7 @@ class AccountQueryConsumer(
     @KafkaListener(topics = ["\${stonebank.kafka.query.account.topic}"], groupId = "\${spring.kafka.consumer.group-id}")
     fun listen(event: Event) {
         logger.info("Received {}", event)
-        val accountDTO = event.accountDTO as AccountDTO
+        val accountDTO = event.account as Account
 
         if(event.type == EventType.UPDATE || event.type == EventType.CREATE) {
             accountService.createOrUpdate(accountDTO.toDocument())

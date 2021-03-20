@@ -1,21 +1,20 @@
 package br.com.ronistone.stonebank.service
 
-import br.com.ronistone.stonebank.domain.Account
+import br.com.ronistone.stonebank.entity.AccountEntity
 import br.com.ronistone.stonebank.domain.AccountStatus
-import br.com.ronistone.stonebank.domain.Transaction
-import br.com.ronistone.stonebank.domain.TransactionDTO
+import br.com.ronistone.stonebank.entity.TransactionEntity
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 interface AccountService {
-    fun createAccount(account: Account): Account
-    fun getBalance(accountId: UUID): Account
-    fun deposit(accountId: UUID, transactionDeposit: Transaction): Account
-    fun getExtract(accountId: UUID): List<Transaction>
+    fun createAccount(accountEntity: AccountEntity): AccountEntity
+    fun getBalance(accountId: UUID): AccountEntity
+    fun deposit(accountId: UUID, transactionEntityDeposit: TransactionEntity): AccountEntity
+    fun getExtract(accountId: UUID): List<TransactionEntity>
     @Transactional
-    fun withdraw(accountId: UUID, transactionWithdraw: Transaction): Account
+    fun withdraw(accountId: UUID, transactionEntityWithdraw: TransactionEntity): AccountEntity
     @Transactional
-    fun transfer(transactionTransfer: Transaction): Account
-    fun getAccountByDocument(document: String?): Account
-    fun updateStatus(accountId: UUID, accountStatus: AccountStatus): Account
+    fun transfer(transactionEntityTransfer: TransactionEntity): AccountEntity
+    fun getAccountByDocument(document: String?): AccountEntity
+    fun updateStatus(accountId: UUID, accountStatus: AccountStatus): AccountEntity
 }

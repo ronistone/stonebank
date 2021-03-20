@@ -40,6 +40,10 @@
             <groupId>br.com.ronistone.stonebank</groupId>
             <artifactId>repository</artifactId>
         </dependency>
+        <dependency>
+            <groupId>br.com.ronistone.stonebank</groupId>
+            <artifactId>entity</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -52,6 +56,11 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-consul-config</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
         </dependency>
     </dependencies>
 

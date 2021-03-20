@@ -1,15 +1,15 @@
 package br.com.ronistone.stonebank.service.impl
 
-import br.com.ronistone.stonebank.domain.Account
-import br.com.ronistone.stonebank.domain.Transaction
+import br.com.ronistone.stonebank.entity.AccountEntity
+import br.com.ronistone.stonebank.entity.TransactionEntity
 import br.com.ronistone.stonebank.domain.TransactionStatus
 import br.com.ronistone.stonebank.domain.TransactionType
 import br.com.ronistone.stonebank.repository.TransactionRepository
 import br.com.ronistone.stonebank.service.TransactionService
 import br.com.ronistone.stonebank.service.commons.Error
 import br.com.ronistone.stonebank.service.commons.ValidationException
-import br.com.ronistone.stonebank.service.commons.copyWithExample
-import br.com.ronistone.stonebank.service.commons.isGreaterThan
+import br.com.ronistone.stonebank.entity.copyWithExample
+import br.com.ronistone.stonebank.domain.isGreaterThan
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
@@ -20,41 +20,41 @@ import java.util.UUID
 
 @Service
 class TransactionServiceImpl(
-    val transactionRepository: TransactionRepository,
-    val kafkaTemplate: KafkaTemplate<Any, Transaction>,
-    @Value("\${stonebank.kafka.topic.transaction:}") val transactionTopicName: String
+        val transactionRepository: TransactionRepository,
+        val kafkaTemplate: KafkaTemplate<Any, TransactionEntity>,
+        @Value("\${stonebank.kafka.topic.transaction:}") val transactionTopicName: String
 ) : TransactionService {
 
-    override fun getExtract(account: Account) : List<Transaction>? {
-        return account.id?.let { transactionRepository.findByReceiverOrPayer(it) }
+    override fun getExtract(accountEntity: AccountEntity) : List<TransactionEntity>? {
+        return accountEntity.id?.let { transactionRepository.findByReceiverOrPayer(it) }
     }
 
     @Transactional
-    override fun deposit(account: Account, transaction: Transaction) : Transaction {
-        return createTransaction(transaction, account, TransactionType.DEPOSIT, Error.DEPOSIT_NOT_POSITIVE)
+    override fun deposit(accountEntity: AccountEntity, transactionEntity: TransactionEntity) : TransactionEntity {
+        return createTransaction(transactionEntity, accountEntity, TransactionType.DEPOSIT, Error.DEPOSIT_NOT_POSITIVE)
     }
 
     @Transactional
-    override fun withdraw(account: Account, transaction: Transaction) : Transaction {
-        return createTransaction(transaction, account, TransactionType.WITHDRAW, Error.WITHDRAW_NOT_POSITIVE)
+    override fun withdraw(accountEntity: AccountEntity, transactionEntity: TransactionEntity) : TransactionEntity {
+        return createTransaction(transactionEntity, accountEntity, TransactionType.WITHDRAW, Error.WITHDRAW_NOT_POSITIVE)
     }
 
     @Transactional
-    override fun transfer(account: Account, transaction: Transaction): Transaction {
+    override fun transfer(accountEntity: AccountEntity, transactionEntity: TransactionEntity): TransactionEntity {
         return createTransaction(
-            transaction.copyWithExample(Transaction(status = TransactionStatus.COMPLETED)),
-            account,
+            transactionEntity.copyWithExample(TransactionEntity(status = TransactionStatus.COMPLETED)),
+            accountEntity,
             TransactionType.TRANSFER, Error.TRANSFER_NOT_POSITIVE
         )
     }
 
     @Transactional
-    override fun createTransfer(accountId: UUID, transactionTransfer: Transaction): Transaction {
-        var transaction = Transaction(
+    override fun createTransfer(accountId: UUID, transactionEntityTransfer: TransactionEntity): TransactionEntity {
+        var transaction = TransactionEntity(
             type = TransactionType.TRANSFER,
-            amount = transactionTransfer.amount,
-            receiver = Account(transactionTransfer.receiver?.id),
-            payer = Account(accountId),
+            amount = transactionEntityTransfer.amount,
+            receiver = AccountEntity(transactionEntityTransfer.receiver?.id),
+            payer = AccountEntity(accountId),
             status = TransactionStatus.CREATED
         )
 
@@ -65,20 +65,20 @@ class TransactionServiceImpl(
         return transaction
     }
 
-    override fun getTransaction(transactionId: UUID): Optional<Transaction> {
+    override fun getTransaction(transactionId: UUID): Optional<TransactionEntity> {
         return transactionRepository.findById(transactionId)
     }
 
-    private fun createTransaction(transaction: Transaction, account: Account, type: TransactionType, error: Error): Transaction {
-        if (transaction.amount!!.isGreaterThan(BigDecimal.ZERO)) {
-            account.let {
-                return transactionRepository.save(Transaction(
-                    id = transaction.id,
+    private fun createTransaction(transactionEntity: TransactionEntity, accountEntity: AccountEntity, type: TransactionType, error: Error): TransactionEntity {
+        if (transactionEntity.amount!!.isGreaterThan(BigDecimal.ZERO)) {
+            accountEntity.let {
+                return transactionRepository.save(TransactionEntity(
+                    id = transactionEntity.id,
                     type = type,
-                    receiver = transaction.receiver,
-                    payer = transaction.payer,
-                    amount = transaction.amount,
-                    status = transaction.status ?: TransactionStatus.COMPLETED
+                    receiver = transactionEntity.receiver,
+                    payer = transactionEntity.payer,
+                    amount = transactionEntity.amount,
+                    status = transactionEntity.status ?: TransactionStatus.COMPLETED
                 ))
             }
         }

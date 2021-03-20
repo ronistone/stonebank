@@ -1,6 +1,6 @@
 package br.com.ronistone.stonebank.query.model
 
-import br.com.ronistone.stonebank.domain.TransactionDTO
+import br.com.ronistone.stonebank.domain.Transaction
 import br.com.ronistone.stonebank.domain.TransactionStatus
 import br.com.ronistone.stonebank.domain.TransactionType
 import org.springframework.data.annotation.Id
@@ -30,7 +30,7 @@ class Transaction(
         val updatedAt: Date? = null
 )
 
-fun TransactionDTO.toDocument() = Transaction(
+fun Transaction.toDocument() = Transaction(
         id = this.id,
         type = this.type,
         status = this.status,

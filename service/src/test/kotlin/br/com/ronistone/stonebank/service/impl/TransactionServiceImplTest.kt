@@ -1,8 +1,7 @@
 package br.com.ronistone.stonebank.service.impl
 
-import br.com.ronistone.stonebank.domain.Account
-import br.com.ronistone.stonebank.domain.Transaction
-import br.com.ronistone.stonebank.domain.TransactionDTO
+import br.com.ronistone.stonebank.entity.AccountEntity
+import br.com.ronistone.stonebank.entity.TransactionEntity
 import br.com.ronistone.stonebank.repository.TransactionRepository
 import br.com.ronistone.stonebank.service.Utils.Companion.any
 import br.com.ronistone.stonebank.service.commons.Error
@@ -29,7 +28,7 @@ class TransactionServiceImplTest {
         `when`(transactionRepository.findByReceiverOrPayer(any(UUID::class.java)))
             .thenReturn(null)
 
-        val transactions = transactionServiceImpl.getExtract(Account(id = UUID.randomUUID()))
+        val transactions = transactionServiceImpl.getExtract(AccountEntity(id = UUID.randomUUID()))
 
         assertThat(transactions)
             .isNull()
@@ -41,9 +40,9 @@ class TransactionServiceImplTest {
         val transactionServiceImpl = getTransactionServiceImpl(transactionRepository)
 
         `when`(transactionRepository.findByReceiverOrPayer(any(UUID::class.java)))
-            .thenReturn(listOf(Transaction(), Transaction()))
+            .thenReturn(listOf(TransactionEntity(), TransactionEntity()))
 
-        val transactions = transactionServiceImpl.getExtract(Account(id = UUID.randomUUID()))
+        val transactions = transactionServiceImpl.getExtract(AccountEntity(id = UUID.randomUUID()))
 
         assertThat(transactions)
             .isNotNull
@@ -55,7 +54,7 @@ class TransactionServiceImplTest {
         val transactionServiceImpl = getTransactionServiceImpl(mock(TransactionRepository::class.java))
 
         try {
-            transactionServiceImpl.deposit(Account(id = UUID.randomUUID()), Transaction(amount = BigDecimal.ZERO))
+            transactionServiceImpl.deposit(AccountEntity(id = UUID.randomUUID()), TransactionEntity(amount = BigDecimal.ZERO))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -69,7 +68,7 @@ class TransactionServiceImplTest {
         val transactionServiceImpl = getTransactionServiceImpl(mock(TransactionRepository::class.java))
 
         try {
-            transactionServiceImpl.withdraw(Account(id = UUID.randomUUID()), Transaction(amount = BigDecimal.ZERO))
+            transactionServiceImpl.withdraw(AccountEntity(id = UUID.randomUUID()), TransactionEntity(amount = BigDecimal.ZERO))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -83,7 +82,7 @@ class TransactionServiceImplTest {
         val transactionServiceImpl = getTransactionServiceImpl(mock(TransactionRepository::class.java))
 
         try {
-            transactionServiceImpl.transfer(Account(id = UUID.randomUUID()), Transaction(amount = BigDecimal.ZERO))
+            transactionServiceImpl.transfer(AccountEntity(id = UUID.randomUUID()), TransactionEntity(amount = BigDecimal.ZERO))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -97,12 +96,12 @@ class TransactionServiceImplTest {
         val transactionRepository = mock(TransactionRepository::class.java)
         val transactionServiceImpl = getTransactionServiceImpl(transactionRepository)
 
-        `when`(transactionRepository.save(any(Transaction::class.java)))
-            .thenReturn(Transaction())
+        `when`(transactionRepository.save(any(TransactionEntity::class.java)))
+            .thenReturn(TransactionEntity())
 
-        transactionServiceImpl.deposit(Account(id = UUID.randomUUID()), Transaction(amount = BigDecimal.TEN))
+        transactionServiceImpl.deposit(AccountEntity(id = UUID.randomUUID()), TransactionEntity(amount = BigDecimal.TEN))
 
-        verify(transactionRepository, times(1)).save(any(Transaction::class.java))
+        verify(transactionRepository, times(1)).save(any(TransactionEntity::class.java))
     }
 
     @Test
@@ -110,12 +109,12 @@ class TransactionServiceImplTest {
         val transactionRepository = mock(TransactionRepository::class.java)
         val transactionServiceImpl = getTransactionServiceImpl(transactionRepository)
 
-        `when`(transactionRepository.save(any(Transaction::class.java)))
-            .thenReturn(Transaction())
+        `when`(transactionRepository.save(any(TransactionEntity::class.java)))
+            .thenReturn(TransactionEntity())
 
-        transactionServiceImpl.withdraw(Account(id = UUID.randomUUID()), Transaction(amount = BigDecimal.TEN))
+        transactionServiceImpl.withdraw(AccountEntity(id = UUID.randomUUID()), TransactionEntity(amount = BigDecimal.TEN))
 
-        verify(transactionRepository, times(1)).save(any(Transaction::class.java))
+        verify(transactionRepository, times(1)).save(any(TransactionEntity::class.java))
     }
 
     @Test
@@ -123,12 +122,12 @@ class TransactionServiceImplTest {
         val transactionRepository = mock(TransactionRepository::class.java)
         val transactionServiceImpl = getTransactionServiceImpl(transactionRepository)
 
-        `when`(transactionRepository.save(any(Transaction::class.java)))
-            .thenReturn(Transaction())
+        `when`(transactionRepository.save(any(TransactionEntity::class.java)))
+            .thenReturn(TransactionEntity())
 
-        transactionServiceImpl.transfer(Account(id = UUID.randomUUID()), Transaction(amount = BigDecimal.TEN))
+        transactionServiceImpl.transfer(AccountEntity(id = UUID.randomUUID()), TransactionEntity(amount = BigDecimal.TEN))
 
-        verify(transactionRepository, times(1)).save(any(Transaction::class.java))
+        verify(transactionRepository, times(1)).save(any(TransactionEntity::class.java))
     }
 
     @Test
@@ -139,19 +138,19 @@ class TransactionServiceImplTest {
             kafkaTemplate
         )
 
-        `when`(transactionRepository.save(any(Transaction::class.java)))
-            .thenReturn(Transaction())
+        `when`(transactionRepository.save(any(TransactionEntity::class.java)))
+            .thenReturn(TransactionEntity())
 
-        transactionServiceImpl.createTransfer(UUID.randomUUID(), Transaction())
+        transactionServiceImpl.createTransfer(UUID.randomUUID(), TransactionEntity())
 
-        verify(transactionRepository, times(1)).save(any(Transaction::class.java))
+        verify(transactionRepository, times(1)).save(any(TransactionEntity::class.java))
         verify(kafkaTemplate, times(1)).send(anyString(), any(Any::class.java))
 
     }
 
     fun getTransactionServiceImpl(transactionRepository: TransactionRepository, kafkaTemplate: KafkaTemplate<*, *>? = null): TransactionServiceImpl {
         return TransactionServiceImpl(transactionRepository,
-            (kafkaTemplate ?: mock(KafkaTemplate::class.java)) as KafkaTemplate<Any, Transaction>,
+            (kafkaTemplate ?: mock(KafkaTemplate::class.java)) as KafkaTemplate<Any, TransactionEntity>,
             "Topic"
         )
     }

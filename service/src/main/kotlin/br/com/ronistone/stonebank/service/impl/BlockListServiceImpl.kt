@@ -1,6 +1,6 @@
 package br.com.ronistone.stonebank.service.impl
 
-import br.com.ronistone.stonebank.domain.BlockList
+import br.com.ronistone.stonebank.entity.BlockListEntity
 import br.com.ronistone.stonebank.domain.BlockListStatus
 import br.com.ronistone.stonebank.repository.BlockListRepository
 import br.com.ronistone.stonebank.service.BlockListService
@@ -25,7 +25,7 @@ class BlockListServiceImpl(
     }
 
     @Transactional
-    override fun blockDocument(document: String): BlockList {
+    override fun blockDocument(document: String): BlockListEntity {
 
         val documentBlockList = blockListRepository.findById(document)
 
@@ -36,7 +36,7 @@ class BlockListServiceImpl(
         }
 
         return blockListRepository.save(
-                BlockList(
+                BlockListEntity(
                         document = document,
                         status = BlockListStatus.BLOCKED
                 )
@@ -44,7 +44,7 @@ class BlockListServiceImpl(
     }
 
     @Transactional
-    override fun releaseDocument(document: String): BlockList {
+    override fun releaseDocument(document: String): BlockListEntity {
 
         val documentBlockList = blockListRepository.findById(document)
 
@@ -55,7 +55,7 @@ class BlockListServiceImpl(
         }
 
         return blockListRepository.save(
-                BlockList(
+                BlockListEntity(
                         document = document,
                         status = BlockListStatus.RELEASED
                 )

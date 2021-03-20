@@ -1,9 +1,9 @@
 package br.com.ronistone.stonebank.application.controller
 
-import br.com.ronistone.stonebank.domain.TransactionDTO
+import br.com.ronistone.stonebank.domain.Transaction
 import br.com.ronistone.stonebank.service.TransactionService
-import br.com.ronistone.stonebank.service.commons.toDTO
-import br.com.ronistone.stonebank.service.commons.toEntity
+import br.com.ronistone.stonebank.entity.toDTO
+import br.com.ronistone.stonebank.entity.toEntity
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -20,12 +20,12 @@ class TransactionController(
 ) {
 
     @PostMapping(path = ["/customer/{id}/transfer"])
-    fun transfer(@PathVariable id: UUID, @RequestBody transactionDTO: TransactionDTO): TransactionDTO {
-        return transactionService.createTransfer(id, transactionDTO.toEntity()).toDTO()
+    fun transfer(@PathVariable id: UUID, @RequestBody transaction: Transaction): Transaction {
+        return transactionService.createTransfer(id, transaction.toEntity()).toDTO()
     }
 
     @GetMapping(path = ["/{id}"])
-    fun findTransaction(@PathVariable("id") id: UUID): ResponseEntity<TransactionDTO> {
+    fun findTransaction(@PathVariable("id") id: UUID): ResponseEntity<Transaction> {
         val transaction = transactionService.getTransaction(id)
 
         if(transaction.isEmpty) {

@@ -1,25 +1,23 @@
 package br.com.ronistone.stonebank.service.impl
 
-import br.com.ronistone.stonebank.domain.Account
+import br.com.ronistone.stonebank.entity.AccountEntity
 import br.com.ronistone.stonebank.domain.AccountStatus
-import br.com.ronistone.stonebank.domain.Customer
-import br.com.ronistone.stonebank.domain.Transaction
+import br.com.ronistone.stonebank.entity.CustomerEntity
+import br.com.ronistone.stonebank.entity.TransactionEntity
 import br.com.ronistone.stonebank.repository.AccountRepository
 import br.com.ronistone.stonebank.repository.CustomerRepository
 import br.com.ronistone.stonebank.service.AccountService
 import br.com.ronistone.stonebank.service.TransactionService
 import br.com.ronistone.stonebank.service.commons.Error
 import br.com.ronistone.stonebank.service.commons.ValidationException
-import br.com.ronistone.stonebank.service.commons.copyWithExample
-import br.com.ronistone.stonebank.service.commons.isGreaterThan
-import br.com.ronistone.stonebank.service.commons.isLessThan
-import br.com.ronistone.stonebank.service.commons.toEntity
+import br.com.ronistone.stonebank.domain.isGreaterThan
+import br.com.ronistone.stonebank.domain.isLessThan
+import br.com.ronistone.stonebank.entity.copyWithExample
 import org.camunda.bpm.engine.RuntimeService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.util.*
-import kotlin.collections.HashMap
 
 @Service
 class AccountServiceImpl(
@@ -33,7 +31,7 @@ class AccountServiceImpl(
         private val CUSTOMER_CREATION = "Customer_Creation"
     }
 
-    override fun updateStatus(accountId: UUID, accountStatus: AccountStatus): Account {
+    override fun updateStatus(accountId: UUID, accountStatus: AccountStatus): AccountEntity {
         val account = accountRepository.findAccountById(accountId)
 
         if(account.isPresent) {
@@ -46,7 +44,7 @@ class AccountServiceImpl(
         throw ValidationException(Error.ACCOUNT_NOT_FOUND)
     }
 
-    override fun getAccountByDocument(document: String?): Account {
+    override fun getAccountByDocument(document: String?): AccountEntity {
         if(document == null) {
             throw ValidationException(Error.DOCUMENT_INVALID)
         }
@@ -54,28 +52,28 @@ class AccountServiceImpl(
     }
 
     @Transactional
-    override fun createAccount(account: Account): Account {
-        if(account.customer == null || account.customer?.name == null || account.customer?.document == null) {
+    override fun createAccount(accountEntity: AccountEntity): AccountEntity {
+        if(accountEntity.customer == null || accountEntity.customer?.name == null || accountEntity.customer?.document == null) {
             throw ValidationException(Error.INVALID_CUSTOMER_INFORMATIONS)
         }
 
-        val customerCreated = accountRepository.findByCustomerDocument(account.customer?.document!!)
+        val customerCreated = accountRepository.findByCustomerDocument(accountEntity.customer?.document!!)
 
         if(customerCreated != null) {
             throw ValidationException(Error.CUSTOMER_ALREADY_HAS_AN_ACCOUNT)
         }
 
-        var customer = Customer(
+        var customer = CustomerEntity(
             id = null,
-            name = account.customer!!.name,
-            document = account.customer!!.document
+            name = accountEntity.customer!!.name,
+            document = accountEntity.customer!!.document
         )
 
         customer = customerRepository.save(customer)
 
-        var newAccount = Account(
+        var newAccount = AccountEntity(
             id = null,
-            amount = account.amount ?: BigDecimal.ZERO,
+            amount = accountEntity.amount ?: BigDecimal.ZERO,
             customer = customer,
             status = AccountStatus.PENDING
         )
@@ -90,11 +88,11 @@ class AccountServiceImpl(
         return newAccount
     }
 
-    override fun getBalance(accountId: UUID): Account {
+    override fun getBalance(accountId: UUID): AccountEntity {
         val account = accountRepository.findById(accountId)
 
         if(account.isPresent) {
-            return Account(
+            return AccountEntity(
                 id = accountId,
                 amount = account.get().amount
             )
@@ -103,7 +101,7 @@ class AccountServiceImpl(
         throw ValidationException(Error.ACCOUNT_NOT_FOUND)
     }
 
-    override fun getExtract(accountId: UUID): List<Transaction> {
+    override fun getExtract(accountId: UUID): List<TransactionEntity> {
         val account = accountRepository.findById(accountId)
 
         if(account.isPresent) {
@@ -114,65 +112,65 @@ class AccountServiceImpl(
     }
 
     @Transactional
-    override fun deposit(accountId: UUID, transactionDeposit: Transaction): Account {
-        return doOperation(accountId, transactionDeposit) { account: Account ->
-            val transaction = transactionService.deposit(account, transactionDeposit.copyWithExample(Transaction(receiver = account)))
-            account.amount = account.amount!!.plus(transaction.amount!!)
-            accountRepository.save(account)
+    override fun deposit(accountId: UUID, transactionEntityDeposit: TransactionEntity): AccountEntity {
+        return doOperation(accountId, transactionEntityDeposit) { accountEntity: AccountEntity ->
+            val transaction = transactionService.deposit(accountEntity, transactionEntityDeposit.copyWithExample(TransactionEntity(receiver = accountEntity)))
+            accountEntity.amount = accountEntity.amount!!.plus(transaction.amount!!)
+            accountRepository.save(accountEntity)
         }
     }
 
     @Transactional
-    override fun withdraw(accountId: UUID, transactionWithdraw: Transaction): Account {
+    override fun withdraw(accountId: UUID, transactionEntityWithdraw: TransactionEntity): AccountEntity {
 
-        return doOperation(accountId, transactionWithdraw) { account: Account ->
-            checkSufficientFunds(account, transactionWithdraw)
-            val transaction = transactionService.withdraw(account, transactionWithdraw.copyWithExample(Transaction( payer = account)))
-            account.amount = account.amount!!.minus(transaction.amount!!)
-            accountRepository.save(account)
+        return doOperation(accountId, transactionEntityWithdraw) { accountEntity: AccountEntity ->
+            checkSufficientFunds(accountEntity, transactionEntityWithdraw)
+            val transaction = transactionService.withdraw(accountEntity, transactionEntityWithdraw.copyWithExample(TransactionEntity( payer = accountEntity)))
+            accountEntity.amount = accountEntity.amount!!.minus(transaction.amount!!)
+            accountRepository.save(accountEntity)
         }
     }
 
     @Transactional
-    override fun transfer(transactionTransfer: Transaction): Account {
-        if(isInvalidAccountsToTransaction(transactionTransfer)) {
+    override fun transfer(transactionEntityTransfer: TransactionEntity): AccountEntity {
+        if(isInvalidAccountsToTransaction(transactionEntityTransfer)) {
             throw ValidationException(Error.TRANSACTIONS_INVALID)
         }
-        val receiverAccount = accountRepository.findById(transactionTransfer.receiver!!.id!!)
+        val receiverAccount = accountRepository.findById(transactionEntityTransfer.receiver!!.id!!)
 
         if(receiverAccount.isEmpty) {
             throw ValidationException(Error.ACCOUNT_RECEIVER_NOT_FOUND)
         }
 
-        val transactionOld = transactionService.getTransaction(transactionTransfer.id!!)
+        val transactionOld = transactionService.getTransaction(transactionEntityTransfer.id!!)
 
         if(transactionOld.isEmpty) {
             throw ValidationException(Error.TRANSACTIONS_NOT_FOUND)
         }
 
-        return doOperation(transactionTransfer.payer!!.id!!, transactionTransfer.copyWithExample(Transaction(id=transactionOld.get().id))) { account: Account ->
-            checkSufficientFunds(account, transactionTransfer)
-            val transaction = transactionService.transfer(account, transactionTransfer.copyWithExample(Transaction( payer = account)))
-            account.amount = account.amount!!.minus(transaction.amount!!)
+        return doOperation(transactionEntityTransfer.payer!!.id!!, transactionEntityTransfer.copyWithExample(TransactionEntity(id=transactionOld.get().id))) { accountEntity: AccountEntity ->
+            checkSufficientFunds(accountEntity, transactionEntityTransfer)
+            val transaction = transactionService.transfer(accountEntity, transactionEntityTransfer.copyWithExample(TransactionEntity( payer = accountEntity)))
+            accountEntity.amount = accountEntity.amount!!.minus(transaction.amount!!)
 
             receiverAccount.get().let {
                 it.amount = it.amount!!.plus(transaction.amount!!)
                 accountRepository.save(it)
             }
 
-            accountRepository.save(account)
+            accountRepository.save(accountEntity)
         }
     }
 
-    private fun isInvalidAccountsToTransaction(transaction: Transaction) =
-        hasInvalidAccount(transaction.receiver) || hasInvalidAccount(transaction.payer)
-                || transaction.receiver!!.id == transaction.payer!!.id
+    private fun isInvalidAccountsToTransaction(transactionEntity: TransactionEntity) =
+        hasInvalidAccount(transactionEntity.receiver) || hasInvalidAccount(transactionEntity.payer)
+                || transactionEntity.receiver!!.id == transactionEntity.payer!!.id
 
-    private fun hasInvalidAccount(account: Account?) = account?.id == null
+    private fun hasInvalidAccount(accountEntity: AccountEntity?) = accountEntity?.id == null
 
-    private fun doOperation(accountId: UUID, transaction: Transaction, operation: (Account) -> Account): Account {
+    private fun doOperation(accountId: UUID, transactionEntity: TransactionEntity, operation: (AccountEntity) -> AccountEntity): AccountEntity {
         val account = accountRepository.findById(accountId)
-        checkValidValue(transaction)
+        checkValidValue(transactionEntity)
 
         if(account.isPresent) {
             account.get().let {
@@ -182,17 +180,17 @@ class AccountServiceImpl(
         throw ValidationException(Error.ACCOUNT_NOT_FOUND)
     }
 
-    private fun checkValidValue(transaction: Transaction) {
-        if (transaction.amount == null || !transaction.amount!!.isGreaterThan(BigDecimal.ZERO)) {
+    private fun checkValidValue(transactionEntity: TransactionEntity) {
+        if (transactionEntity.amount == null || !transactionEntity.amount!!.isGreaterThan(BigDecimal.ZERO)) {
             throw ValidationException(Error.INVALID_AMOUNT)
         }
     }
 
     private fun checkSufficientFunds(
-        it: Account,
-        transaction: Transaction
+            it: AccountEntity,
+            transactionEntity: TransactionEntity
     ) {
-        if (it.amount!!.isLessThan(transaction.amount!!)) {
+        if (it.amount!!.isLessThan(transactionEntity.amount!!)) {
             throw ValidationException(Error.INSUFFICIENT_FUNDS)
         }
     }

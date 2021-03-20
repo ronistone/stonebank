@@ -1,4 +1,4 @@
-package br.com.ronistone.stonebank.domain
+package br.com.ronistone.stonebank.entity
 
 import java.util.UUID
 import javax.persistence.Column
@@ -11,7 +11,7 @@ import javax.persistence.Table
 
 @Entity(name = "customer")
 @Table(name = "CUSTOMER")
-data class Customer(
+data class CustomerEntity(
         @Id
         @GeneratedValue( strategy = GenerationType.AUTO )
         @Column(name="ID")

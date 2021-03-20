@@ -1,6 +1,6 @@
 package br.com.ronistone.stonebank.query.model
 
-import br.com.ronistone.stonebank.domain.AccountDTO
+import br.com.ronistone.stonebank.domain.Account
 import br.com.ronistone.stonebank.domain.AccountStatus
 import org.springframework.data.annotation.Id
 import org.springframework.data.elasticsearch.annotations.Document
@@ -26,7 +26,7 @@ class Account(
 )
 
 
-fun AccountDTO.toDocument() = Account(
+fun Account.toDocument() = Account(
         id = this.id,
         amount = this.amount,
         customer = Customer(

@@ -2,27 +2,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
-        <groupId>br.com.ronistone</groupId>
         <artifactId>stonebank</artifactId>
+        <groupId>br.com.ronistone</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <groupId>br.com.ronistone.stonebank</groupId>
-    <artifactId>repository</artifactId>
+    <artifactId>entity</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>repository</name>
+    <name>entity</name>
+    <description>Demo project for Spring Boot</description>
     <properties>
         <java.version>11</java.version>
-        <kotlin.version>1.4.21</kotlin.version>
+        <kotlin.version>1.4.31</kotlin.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
@@ -39,13 +37,8 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>br.com.ronistone.stonebank</groupId>
-            <artifactId>entity</artifactId>
+            <artifactId>domain</artifactId>
         </dependency>
     </dependencies>
 </project>

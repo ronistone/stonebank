@@ -1,10 +1,8 @@
 package br.com.ronistone.stonebank.service.impl
 
-import br.com.ronistone.stonebank.domain.Account
-import br.com.ronistone.stonebank.domain.AccountDTO
-import br.com.ronistone.stonebank.domain.Customer
-import br.com.ronistone.stonebank.domain.Transaction
-import br.com.ronistone.stonebank.domain.TransactionDTO
+import br.com.ronistone.stonebank.entity.AccountEntity
+import br.com.ronistone.stonebank.entity.CustomerEntity
+import br.com.ronistone.stonebank.entity.TransactionEntity
 import br.com.ronistone.stonebank.repository.AccountRepository
 import br.com.ronistone.stonebank.repository.CustomerRepository
 import br.com.ronistone.stonebank.service.TransactionService
@@ -12,7 +10,6 @@ import br.com.ronistone.stonebank.service.Utils.Companion.any
 import br.com.ronistone.stonebank.service.Utils.Companion.eq
 import br.com.ronistone.stonebank.service.commons.Error
 import br.com.ronistone.stonebank.service.commons.ValidationException
-import br.com.ronistone.stonebank.service.commons.toDTO
 import org.assertj.core.api.Assertions.assertThat
 import org.camunda.bpm.engine.RuntimeService
 import org.junit.jupiter.api.Test
@@ -53,7 +50,7 @@ class AccountServiceImplTest {
         val accountService = accountServiceImpl(accountRepository = accountRepository)
 
         `when`(accountRepository.findByCustomerDocument(anyString()))
-            .thenReturn(Account(id = UUID.randomUUID()))
+            .thenReturn(AccountEntity(id = UUID.randomUUID()))
 
         accountService.getAccountByDocument(DOCUMENT)
         verify(accountRepository, times(1)).findByCustomerDocument(anyString())
@@ -64,7 +61,7 @@ class AccountServiceImplTest {
         val accountService = accountServiceImpl()
 
         try {
-            accountService.createAccount(Account())
+            accountService.createAccount(AccountEntity())
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -79,10 +76,10 @@ class AccountServiceImplTest {
         val accountService = accountServiceImpl(accountRepository = accountRepository)
 
         `when`(accountRepository.findByCustomerDocument(anyString()))
-            .thenReturn(Account(id = UUID.randomUUID()))
+            .thenReturn(AccountEntity(id = UUID.randomUUID()))
 
         try {
-            accountService.createAccount(Account( customer = Customer(
+            accountService.createAccount(AccountEntity( customer = CustomerEntity(
                 name = NAME,
                 document = DOCUMENT
             )))
@@ -100,18 +97,18 @@ class AccountServiceImplTest {
         val accountRepository = mock(AccountRepository::class.java)
         val accountService = accountServiceImpl(customerRepository, accountRepository)
 
-        `when`(customerRepository.save(any(Customer::class.java)))
-            .thenReturn(Customer())
-        `when`(accountRepository.save(any(Account::class.java)))
-            .thenReturn(Account(id = UUID.randomUUID()))
+        `when`(customerRepository.save(any(CustomerEntity::class.java)))
+            .thenReturn(CustomerEntity())
+        `when`(accountRepository.save(any(AccountEntity::class.java)))
+            .thenReturn(AccountEntity(id = UUID.randomUUID()))
 
-        accountService.createAccount(Account(customer = Customer(
+        accountService.createAccount(AccountEntity(customer = CustomerEntity(
             name = NAME,
             document = DOCUMENT
         )))
 
-        verify(accountRepository, times(1)).save(any(Account::class.java))
-        verify(customerRepository, times(1)).save(any(Customer::class.java))
+        verify(accountRepository, times(1)).save(any(AccountEntity::class.java))
+        verify(customerRepository, times(1)).save(any(CustomerEntity::class.java))
     }
 
     @Test
@@ -139,7 +136,7 @@ class AccountServiceImplTest {
 
         val accountId = UUID.randomUUID()
         `when`(accountRepository.findById(any(UUID::class.java)))
-            .thenReturn(Optional.of(Account(id = accountId, amount = BigDecimal.ONE)))
+            .thenReturn(Optional.of(AccountEntity(id = accountId, amount = BigDecimal.ONE)))
 
         val account = accountService.getBalance(accountId)
 
@@ -177,8 +174,8 @@ class AccountServiceImplTest {
 
         val accountId = UUID.randomUUID()
         `when`(accountRepository.findById(any(UUID::class.java)))
-            .thenReturn(Optional.of(Account(id = accountId, amount = BigDecimal.ONE)))
-        `when`(transactionService.getExtract(any(Account::class.java)))
+            .thenReturn(Optional.of(AccountEntity(id = accountId, amount = BigDecimal.ONE)))
+        `when`(transactionService.getExtract(any(AccountEntity::class.java)))
             .thenReturn(null)
 
         try {
@@ -199,9 +196,9 @@ class AccountServiceImplTest {
 
         val accountId = UUID.randomUUID()
         `when`(accountRepository.findById(any(UUID::class.java)))
-            .thenReturn(Optional.of(Account(id = accountId, amount = BigDecimal.ONE)))
-        `when`(transactionService.getExtract(any(Account::class.java)))
-            .thenReturn(listOf(Transaction()))
+            .thenReturn(Optional.of(AccountEntity(id = accountId, amount = BigDecimal.ONE)))
+        `when`(transactionService.getExtract(any(AccountEntity::class.java)))
+            .thenReturn(listOf(TransactionEntity()))
 
         val account = accountService.getExtract(accountId)
 
@@ -217,7 +214,7 @@ class AccountServiceImplTest {
         val accountService = accountServiceImpl()
 
         try {
-            accountService.transfer(Transaction(payer = Account(id = UUID.randomUUID())))
+            accountService.transfer(TransactionEntity(payer = AccountEntity(id = UUID.randomUUID())))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -235,7 +232,7 @@ class AccountServiceImplTest {
             .thenReturn(Optional.empty())
 
         try {
-            accountService.transfer(Transaction(payer = Account(id = UUID.randomUUID()), receiver = Account(id = UUID.randomUUID())))
+            accountService.transfer(TransactionEntity(payer = AccountEntity(id = UUID.randomUUID()), receiver = AccountEntity(id = UUID.randomUUID())))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -249,13 +246,13 @@ class AccountServiceImplTest {
         val accountRepository = mock(AccountRepository::class.java)
         val accountService = accountServiceImpl(accountRepository = accountRepository)
 
-        val receiver = Account(id = UUID.randomUUID())
+        val receiver = AccountEntity(id = UUID.randomUUID())
 
         `when`(accountRepository.findById(eq(receiver.id!!)))
-            .thenReturn(Optional.of(Account(id = receiver.id)))
+            .thenReturn(Optional.of(AccountEntity(id = receiver.id)))
 
         try {
-            accountService.transfer(Transaction(id = UUID.randomUUID(), payer = Account(id = UUID.randomUUID()), receiver = receiver))
+            accountService.transfer(TransactionEntity(id = UUID.randomUUID(), payer = AccountEntity(id = UUID.randomUUID()), receiver = receiver))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -270,15 +267,15 @@ class AccountServiceImplTest {
         val transactionService = mock(TransactionService::class.java)
         val accountService = accountServiceImpl(accountRepository = accountRepository, transactionService = transactionService)
 
-        val receiver = Account(id = UUID.randomUUID())
+        val receiver = AccountEntity(id = UUID.randomUUID())
 
         `when`(accountRepository.findById(eq(receiver.id!!)))
-            .thenReturn(Optional.of(Account(id = receiver.id)))
+            .thenReturn(Optional.of(AccountEntity(id = receiver.id)))
         `when`(transactionService.getTransaction(any(UUID::class.java)))
-            .thenReturn(Optional.of(Transaction()))
+            .thenReturn(Optional.of(TransactionEntity()))
 
         try {
-            accountService.transfer(Transaction(id = UUID.randomUUID(), payer = Account(id = UUID.randomUUID()), receiver = receiver))
+            accountService.transfer(TransactionEntity(id = UUID.randomUUID(), payer = AccountEntity(id = UUID.randomUUID()), receiver = receiver))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -293,8 +290,8 @@ class AccountServiceImplTest {
         val transactionService = mock(TransactionService::class.java)
         val accountService = accountServiceImpl(accountRepository = accountRepository, transactionService = transactionService)
 
-        val receiver = Account(id = UUID.randomUUID(), amount = BigDecimal.ZERO, customer = Customer())
-        val payer = Account(id = UUID.randomUUID(), amount = BigDecimal.TEN, customer = Customer())
+        val receiver = AccountEntity(id = UUID.randomUUID(), amount = BigDecimal.ZERO, customer = CustomerEntity())
+        val payer = AccountEntity(id = UUID.randomUUID(), amount = BigDecimal.TEN, customer = CustomerEntity())
 
         `when`(accountRepository.findById(eq(receiver.id!!)))
             .thenReturn(Optional.of(receiver))
@@ -302,28 +299,28 @@ class AccountServiceImplTest {
         `when`(accountRepository.findById(eq(payer.id!!)))
             .thenReturn(Optional.of(payer))
 
-        `when`(transactionService.transfer(eq(payer), any(Transaction::class.java)))
-            .thenReturn(Transaction(amount = BigDecimal.TEN))
+        `when`(transactionService.transfer(eq(payer), any(TransactionEntity::class.java)))
+            .thenReturn(TransactionEntity(amount = BigDecimal.TEN))
 
-        `when`(accountRepository.save(any(Account::class.java)))
-            .thenReturn(Account(id = UUID.randomUUID()))
+        `when`(accountRepository.save(any(AccountEntity::class.java)))
+            .thenReturn(AccountEntity(id = UUID.randomUUID()))
 
         `when`(transactionService.getTransaction(any(UUID::class.java)))
-            .thenReturn(Optional.of(Transaction()))
+            .thenReturn(Optional.of(TransactionEntity()))
 
-        accountService.transfer(Transaction(id = UUID.randomUUID(), payer = Account(id = payer.id!!), receiver = receiver, amount = BigDecimal.TEN))
+        accountService.transfer(TransactionEntity(id = UUID.randomUUID(), payer = AccountEntity(id = payer.id!!), receiver = receiver, amount = BigDecimal.TEN))
 
-        verify(accountRepository, times(2)).save(any(Account::class.java))
+        verify(accountRepository, times(2)).save(any(AccountEntity::class.java))
     }
 
     @Test
     fun `deposit account not found throw exception`() {
         val accountService = accountServiceImpl()
 
-        val receiver = Account(id = UUID.randomUUID())
+        val receiver = AccountEntity(id = UUID.randomUUID())
 
         try {
-            accountService.deposit(UUID.randomUUID(), Transaction( receiver = receiver, amount = BigDecimal.TEN))
+            accountService.deposit(UUID.randomUUID(), TransactionEntity( receiver = receiver, amount = BigDecimal.TEN))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)
@@ -338,18 +335,18 @@ class AccountServiceImplTest {
         val transactionService = mock(TransactionService::class.java)
         val accountService = accountServiceImpl(accountRepository = accountRepository, transactionService = transactionService)
 
-        val receiver = Account(id = UUID.randomUUID())
+        val receiver = AccountEntity(id = UUID.randomUUID())
 
         `when`(accountRepository.findById(any(UUID::class.java)))
-            .thenReturn(Optional.of(Account(id = UUID.randomUUID(), amount = BigDecimal.ZERO)))
-        `when`(transactionService.deposit(any(Account::class.java), any(Transaction::class.java)))
-            .thenReturn(Transaction(amount = BigDecimal.TEN))
-        `when`(accountRepository.save(any(Account::class.java)))
-            .thenReturn(Account(id = UUID.randomUUID()))
+            .thenReturn(Optional.of(AccountEntity(id = UUID.randomUUID(), amount = BigDecimal.ZERO)))
+        `when`(transactionService.deposit(any(AccountEntity::class.java), any(TransactionEntity::class.java)))
+            .thenReturn(TransactionEntity(amount = BigDecimal.TEN))
+        `when`(accountRepository.save(any(AccountEntity::class.java)))
+            .thenReturn(AccountEntity(id = UUID.randomUUID()))
 
-        accountService.deposit(UUID.randomUUID(), Transaction( receiver = receiver, amount = BigDecimal.TEN))
+        accountService.deposit(UUID.randomUUID(), TransactionEntity( receiver = receiver, amount = BigDecimal.TEN))
 
-        verify(accountRepository, times(1)).save(any(Account::class.java))
+        verify(accountRepository, times(1)).save(any(AccountEntity::class.java))
     }
 
     @Test
@@ -358,18 +355,18 @@ class AccountServiceImplTest {
         val transactionService = mock(TransactionService::class.java)
         val accountService = accountServiceImpl(accountRepository = accountRepository, transactionService = transactionService)
 
-        val receiver = Account(id = UUID.randomUUID())
+        val receiver = AccountEntity(id = UUID.randomUUID())
 
         `when`(accountRepository.findById(any(UUID::class.java)))
-            .thenReturn(Optional.of(Account(id = UUID.randomUUID(), amount = BigDecimal.TEN)))
-        `when`(transactionService.withdraw(any(Account::class.java), any(Transaction::class.java)))
-            .thenReturn(Transaction(amount = BigDecimal.TEN))
-        `when`(accountRepository.save(any(Account::class.java)))
-            .thenReturn(Account(id = UUID.randomUUID()))
+            .thenReturn(Optional.of(AccountEntity(id = UUID.randomUUID(), amount = BigDecimal.TEN)))
+        `when`(transactionService.withdraw(any(AccountEntity::class.java), any(TransactionEntity::class.java)))
+            .thenReturn(TransactionEntity(amount = BigDecimal.TEN))
+        `when`(accountRepository.save(any(AccountEntity::class.java)))
+            .thenReturn(AccountEntity(id = UUID.randomUUID()))
 
-        accountService.withdraw(UUID.randomUUID(), Transaction( receiver = receiver, amount = BigDecimal.TEN))
+        accountService.withdraw(UUID.randomUUID(), TransactionEntity( receiver = receiver, amount = BigDecimal.TEN))
 
-        verify(accountRepository, times(1)).save(any(Account::class.java))
+        verify(accountRepository, times(1)).save(any(AccountEntity::class.java))
     }
 
     @Test
@@ -378,15 +375,15 @@ class AccountServiceImplTest {
         val transactionService = mock(TransactionService::class.java)
         val accountService = accountServiceImpl(accountRepository = accountRepository, transactionService = transactionService)
 
-        val receiver = Account(id = UUID.randomUUID())
+        val receiver = AccountEntity(id = UUID.randomUUID())
 
         `when`(accountRepository.findById(any(UUID::class.java)))
-            .thenReturn(Optional.of(Account(id = UUID.randomUUID(), amount = BigDecimal.ZERO)))
-        `when`(transactionService.deposit(any(Account::class.java), any(Transaction::class.java)))
-            .thenReturn(Transaction(amount = BigDecimal.TEN))
+            .thenReturn(Optional.of(AccountEntity(id = UUID.randomUUID(), amount = BigDecimal.ZERO)))
+        `when`(transactionService.deposit(any(AccountEntity::class.java), any(TransactionEntity::class.java)))
+            .thenReturn(TransactionEntity(amount = BigDecimal.TEN))
 
         try {
-            accountService.withdraw(UUID.randomUUID(), Transaction(receiver = receiver, amount = BigDecimal.TEN))
+            accountService.withdraw(UUID.randomUUID(), TransactionEntity(receiver = receiver, amount = BigDecimal.TEN))
             fail("Expected validation exception")
         } catch (ex: ValidationException) {
             assertThat(ex.errors)

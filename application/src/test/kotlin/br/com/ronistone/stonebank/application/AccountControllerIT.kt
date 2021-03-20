@@ -1,7 +1,7 @@
 package br.com.ronistone.stonebank.application
 
-import br.com.ronistone.stonebank.domain.AccountDTO
-import br.com.ronistone.stonebank.service.commons.jsonToObject
+import br.com.ronistone.stonebank.domain.Account
+import br.com.ronistone.stonebank.domain.jsonToObject
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -108,19 +108,19 @@ class AccountControllerIT {
             .andExpect(jsonPath("$.document").value(payer.document!!))
     }
 
-    fun doDeposit(account: AccountDTO, payload: String) = this.mockMvc.perform(
+    fun doDeposit(account: Account, payload: String) = this.mockMvc.perform(
         put("/api/account/${account.id.toString()}/deposit")
             .content(payload)
             .contentType(MediaType.APPLICATION_JSON)
     ).andExpect(status().is2xxSuccessful)
 
-    private fun createAccount(payload: String): AccountDTO {
+    private fun createAccount(payload: String): Account {
         return this.mockMvc.perform(
             post("/api/account")
                 .content(payload)
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().is2xxSuccessful)
-            .andReturn().response.contentAsString.jsonToObject(AccountDTO::class.java)
+            .andReturn().response.contentAsString.jsonToObject(Account::class.java)
     }
 
 

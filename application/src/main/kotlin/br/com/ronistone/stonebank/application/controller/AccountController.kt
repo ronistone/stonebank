@@ -1,10 +1,10 @@
 package br.com.ronistone.stonebank.application.controller
 
-import br.com.ronistone.stonebank.domain.AccountDTO
-import br.com.ronistone.stonebank.domain.TransactionDTO
+import br.com.ronistone.stonebank.domain.Account
+import br.com.ronistone.stonebank.domain.Transaction
 import br.com.ronistone.stonebank.service.AccountService
-import br.com.ronistone.stonebank.service.commons.toDTO
-import br.com.ronistone.stonebank.service.commons.toEntity
+import br.com.ronistone.stonebank.entity.toDTO
+import br.com.ronistone.stonebank.entity.toEntity
 import org.springframework.data.repository.query.Param
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -23,22 +23,22 @@ class AccountController(
 ) {
 
     @PostMapping
-    fun createAccount(@RequestBody account: AccountDTO): AccountDTO {
+    fun createAccount(@RequestBody account: Account): Account {
         return accountService.createAccount(account.toEntity()).toDTO()
     }
 
     @GetMapping
-    fun getAccount(@Param("document") document: String?): AccountDTO {
+    fun getAccount(@Param("document") document: String?): Account {
         return accountService.getAccountByDocument(document).toDTO()
     }
 
     @GetMapping(path = [ "/{id}" ])
-    fun getBalance(@PathVariable("id") accountId: UUID): AccountDTO {
+    fun getBalance(@PathVariable("id") accountId: UUID): Account {
         return accountService.getBalance(accountId).toDTO()
     }
 
     @GetMapping(path = ["/{id}/extract"])
-    fun getExtract(@PathVariable("id") accountId: UUID): List<TransactionDTO> {
+    fun getExtract(@PathVariable("id") accountId: UUID): List<Transaction> {
         val transactions = accountService.getExtract(accountId)
 
         return transactions.stream().map {
@@ -47,13 +47,13 @@ class AccountController(
     }
 
     @PutMapping(path = ["/{id}/deposit"])
-    fun deposit(@PathVariable id: UUID, @RequestBody transactionDTO: TransactionDTO): AccountDTO {
-        return accountService.deposit(id, transactionDTO.toEntity()).toDTO()
+    fun deposit(@PathVariable id: UUID, @RequestBody transaction: Transaction): Account {
+        return accountService.deposit(id, transaction.toEntity()).toDTO()
     }
 
     @PutMapping(path = ["/{id}/withdraw"])
-    fun withdraw(@PathVariable id: UUID, @RequestBody transactionDTO: TransactionDTO): AccountDTO {
-        return accountService.withdraw(id, transactionDTO.toEntity()).toDTO()
+    fun withdraw(@PathVariable id: UUID, @RequestBody transaction: Transaction): Account {
+        return accountService.withdraw(id, transaction.toEntity()).toDTO()
     }
 
 }

@@ -1,4 +1,4 @@
-package br.com.ronistone.stonebank.domain
+package br.com.ronistone.stonebank.entity
 
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate

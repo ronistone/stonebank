@@ -2,7 +2,7 @@ package br.com.ronistone.stonebank.query.consumer
 
 import br.com.ronistone.stonebank.domain.Event
 import br.com.ronistone.stonebank.domain.EventType
-import br.com.ronistone.stonebank.domain.TransactionDTO
+import br.com.ronistone.stonebank.domain.Transaction
 import br.com.ronistone.stonebank.query.model.toDocument
 import br.com.ronistone.stonebank.query.service.TransactionService
 import org.apache.logging.log4j.LogManager
@@ -19,7 +19,7 @@ class TransactionQueryConsumer(
     @KafkaListener(topics = ["\${stonebank.kafka.query.transaction.topic}"], groupId = "\${spring.kafka.consumer.group-id}")
     fun listen(event: Event) {
         logger.info("Received {}", event)
-        val transactionDTO = event.transactionDTO as TransactionDTO
+        val transactionDTO = event.transaction as Transaction
 
         if(event.type == EventType.UPDATE || event.type == EventType.CREATE) {
             transactionService.createOrUpdate(transactionDTO.toDocument())
