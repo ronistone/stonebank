@@ -44,6 +44,16 @@
             <groupId>br.com.ronistone.stonebank</groupId>
             <artifactId>entity</artifactId>
         </dependency>
+        <dependency>
+            <groupId>br.com.ronistone.stonebank</groupId>
+            <artifactId>commons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>br.com.ronistone.stonebank</groupId>
+            <artifactId>commons</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.google.code.gson</groupId>

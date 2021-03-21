@@ -7,7 +7,6 @@ import java.util.Optional
 import java.util.UUID
 
 interface TransactionService {
-    fun getExtract(accountEntity: AccountEntity): List<TransactionEntity>?
 
     @Transactional
     fun deposit(accountEntity: AccountEntity, transactionEntity: TransactionEntity): TransactionEntity

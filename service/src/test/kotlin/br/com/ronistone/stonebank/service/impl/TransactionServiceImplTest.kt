@@ -3,9 +3,9 @@ package br.com.ronistone.stonebank.service.impl
 import br.com.ronistone.stonebank.entity.AccountEntity
 import br.com.ronistone.stonebank.entity.TransactionEntity
 import br.com.ronistone.stonebank.repository.TransactionRepository
-import br.com.ronistone.stonebank.service.Utils.Companion.any
-import br.com.ronistone.stonebank.service.commons.Error
-import br.com.ronistone.stonebank.service.commons.ValidationException
+import br.com.ronistone.stonebank.commons.Utils.Companion.any
+import br.com.ronistone.stonebank.commons.Error
+import br.com.ronistone.stonebank.commons.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -19,35 +19,6 @@ import java.math.BigDecimal
 import java.util.UUID
 
 class TransactionServiceImplTest {
-
-    @Test
-    fun `getExtract repository return null`() {
-        val transactionRepository = mock(TransactionRepository::class.java)
-        val transactionServiceImpl = getTransactionServiceImpl(transactionRepository)
-
-        `when`(transactionRepository.findByReceiverOrPayer(any(UUID::class.java)))
-            .thenReturn(null)
-
-        val transactions = transactionServiceImpl.getExtract(AccountEntity(id = UUID.randomUUID()))
-
-        assertThat(transactions)
-            .isNull()
-    }
-
-    @Test
-    fun `getExtract repository return transactions`() {
-        val transactionRepository = mock(TransactionRepository::class.java)
-        val transactionServiceImpl = getTransactionServiceImpl(transactionRepository)
-
-        `when`(transactionRepository.findByReceiverOrPayer(any(UUID::class.java)))
-            .thenReturn(listOf(TransactionEntity(), TransactionEntity()))
-
-        val transactions = transactionServiceImpl.getExtract(AccountEntity(id = UUID.randomUUID()))
-
-        assertThat(transactions)
-            .isNotNull
-            .hasSize(2)
-    }
 
     @Test
     fun `deposit invalid value throw exception`() {

@@ -1,5 +1,7 @@
 package br.com.ronistone.stonebank.service.impl
 
+import br.com.ronistone.stonebank.commons.Error
+import br.com.ronistone.stonebank.commons.ValidationException
 import br.com.ronistone.stonebank.entity.AccountEntity
 import br.com.ronistone.stonebank.domain.AccountStatus
 import br.com.ronistone.stonebank.entity.CustomerEntity
@@ -8,8 +10,6 @@ import br.com.ronistone.stonebank.repository.AccountRepository
 import br.com.ronistone.stonebank.repository.CustomerRepository
 import br.com.ronistone.stonebank.service.AccountService
 import br.com.ronistone.stonebank.service.TransactionService
-import br.com.ronistone.stonebank.service.commons.Error
-import br.com.ronistone.stonebank.service.commons.ValidationException
 import br.com.ronistone.stonebank.domain.isGreaterThan
 import br.com.ronistone.stonebank.domain.isLessThan
 import br.com.ronistone.stonebank.entity.copyWithExample
@@ -28,7 +28,7 @@ class AccountServiceImpl(
 ): AccountService {
 
     companion object {
-        private val CUSTOMER_CREATION = "Customer_Creation"
+        private const val CUSTOMER_CREATION = "Customer_Creation"
     }
 
     override fun updateStatus(accountId: UUID, accountStatus: AccountStatus): AccountEntity {
@@ -42,13 +42,6 @@ class AccountServiceImpl(
 
         }
         throw ValidationException(Error.ACCOUNT_NOT_FOUND)
-    }
-
-    override fun getAccountByDocument(document: String?): AccountEntity {
-        if(document == null) {
-            throw ValidationException(Error.DOCUMENT_INVALID)
-        }
-        return accountRepository.findByCustomerDocument(document) ?: throw ValidationException(Error.ACCOUNT_NOT_FOUND)
     }
 
     @Transactional
@@ -86,29 +79,6 @@ class AccountServiceImpl(
         )
 
         return newAccount
-    }
-
-    override fun getBalance(accountId: UUID): AccountEntity {
-        val account = accountRepository.findById(accountId)
-
-        if(account.isPresent) {
-            return AccountEntity(
-                id = accountId,
-                amount = account.get().amount
-            )
-        }
-
-        throw ValidationException(Error.ACCOUNT_NOT_FOUND)
-    }
-
-    override fun getExtract(accountId: UUID): List<TransactionEntity> {
-        val account = accountRepository.findById(accountId)
-
-        if(account.isPresent) {
-            return transactionService.getExtract(account.get())
-                ?: throw ValidationException(Error.TRANSACTIONS_NOT_FOUND)
-        }
-        throw ValidationException(Error.ACCOUNT_NOT_FOUND)
     }
 
     @Transactional

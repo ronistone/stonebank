@@ -24,6 +24,7 @@
         <module>consumer</module>
         <module>processor</module>
         <module>query</module>
+        <module>commons</module>
     </modules>
 
     <properties>
@@ -65,6 +66,18 @@
                 <groupId>br.com.ronistone.stonebank</groupId>
                 <artifactId>entity</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>br.com.ronistone.stonebank</groupId>
+                <artifactId>commons</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>br.com.ronistone.stonebank</groupId>
+                <artifactId>commons</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>com.google.code.gson</groupId>

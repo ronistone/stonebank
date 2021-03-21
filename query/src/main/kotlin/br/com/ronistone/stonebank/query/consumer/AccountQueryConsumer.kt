@@ -14,7 +14,6 @@ class AccountQueryConsumer(
         val accountService: AccountService
 ) {
 
-
     val logger = LogManager.getLogger(AccountQueryConsumer::class.java)
     @KafkaListener(topics = ["\${stonebank.kafka.query.account.topic}"], groupId = "\${spring.kafka.consumer.group-id}")
     fun listen(event: Event) {
@@ -24,7 +23,7 @@ class AccountQueryConsumer(
         if(event.type == EventType.UPDATE || event.type == EventType.CREATE) {
             accountService.createOrUpdate(accountDTO.toDocument())
         } else if (event.type == EventType.DELETE) {
-            accountService.deleteTransaction(accountDTO.toDocument())
+            accountService.deleteAccount(accountDTO.toDocument())
         }
     }
 

@@ -1,4 +1,4 @@
-package br.com.ronistone.stonebank.application.controller
+package br.com.ronistone.stonebank.query.controller
 
 import br.com.ronistone.stonebank.commons.Error
 import br.com.ronistone.stonebank.commons.ValidationException

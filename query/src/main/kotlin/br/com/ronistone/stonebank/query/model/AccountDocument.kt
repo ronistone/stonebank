@@ -11,13 +11,11 @@ import java.util.Date
 import java.util.UUID
 
 @Document(indexName = "account")
-class Account(
+class AccountDocument(
         @Id
         val id: UUID? = null,
         var amount: BigDecimal? = null,
-
-        @Field(type = FieldType.Nested, includeInParent = true)
-        val customer: Customer? = null,
+        val customer: CustomerDocument? = null,
 
         @Field(type = FieldType.Keyword)
         var status: AccountStatus? = null,
@@ -26,13 +24,23 @@ class Account(
 )
 
 
-fun Account.toDocument() = Account(
+fun Account.toDocument() = AccountDocument(
         id = this.id,
         amount = this.amount,
-        customer = Customer(
+        customer = CustomerDocument(
                 name = this.name,
                 document = this.document
         ),
+        status = this.status,
+        createdAt = this.createdAt,
+        updatedAt = this.updatedAt
+)
+
+fun AccountDocument.toDomain() = Account(
+        id = this.id,
+        amount = this.amount,
+        name = this.customer?.name,
+        document = this.customer?.document,
         status = this.status,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt

@@ -1,13 +1,13 @@
 package br.com.ronistone.stonebank.service.impl
 
+import br.com.ronistone.stonebank.commons.ValidationException
 import br.com.ronistone.stonebank.entity.AccountEntity
 import br.com.ronistone.stonebank.entity.TransactionEntity
 import br.com.ronistone.stonebank.domain.TransactionStatus
 import br.com.ronistone.stonebank.domain.TransactionType
 import br.com.ronistone.stonebank.repository.TransactionRepository
 import br.com.ronistone.stonebank.service.TransactionService
-import br.com.ronistone.stonebank.service.commons.Error
-import br.com.ronistone.stonebank.service.commons.ValidationException
+import br.com.ronistone.stonebank.commons.Error
 import br.com.ronistone.stonebank.entity.copyWithExample
 import br.com.ronistone.stonebank.domain.isGreaterThan
 import org.springframework.beans.factory.annotation.Value
@@ -24,10 +24,6 @@ class TransactionServiceImpl(
         val kafkaTemplate: KafkaTemplate<Any, TransactionEntity>,
         @Value("\${stonebank.kafka.topic.transaction:}") val transactionTopicName: String
 ) : TransactionService {
-
-    override fun getExtract(accountEntity: AccountEntity) : List<TransactionEntity>? {
-        return accountEntity.id?.let { transactionRepository.findByReceiverOrPayer(it) }
-    }
 
     @Transactional
     override fun deposit(accountEntity: AccountEntity, transactionEntity: TransactionEntity) : TransactionEntity {

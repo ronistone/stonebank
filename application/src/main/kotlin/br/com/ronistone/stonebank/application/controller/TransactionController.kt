@@ -24,14 +24,4 @@ class TransactionController(
         return transactionService.createTransfer(id, transaction.toEntity()).toDTO()
     }
 
-    @GetMapping(path = ["/{id}"])
-    fun findTransaction(@PathVariable("id") id: UUID): ResponseEntity<Transaction> {
-        val transaction = transactionService.getTransaction(id)
-
-        if(transaction.isEmpty) {
-            return ResponseEntity.notFound().build()
-        }
-        return ResponseEntity.ok(transaction.get().toDTO())
-    }
-
 }

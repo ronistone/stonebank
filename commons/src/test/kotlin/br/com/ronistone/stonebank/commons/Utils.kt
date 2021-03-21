@@ -1,4 +1,4 @@
-package br.com.ronistone.stonebank.service
+package br.com.ronistone.stonebank.commons
 
 import org.mockito.Mockito
 

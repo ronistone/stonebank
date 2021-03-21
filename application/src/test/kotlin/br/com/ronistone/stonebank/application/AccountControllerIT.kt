@@ -1,7 +1,9 @@
 package br.com.ronistone.stonebank.application
 
 import br.com.ronistone.stonebank.domain.Account
+import br.com.ronistone.stonebank.domain.AccountStatus
 import br.com.ronistone.stonebank.domain.jsonToObject
+import br.com.ronistone.stonebank.service.AccountService
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -26,6 +28,9 @@ class AccountControllerIT {
     @Autowired
     lateinit var mockMvc: MockMvc
 
+    @Autowired
+    lateinit var accountService: AccountService
+
 
     @Test
     fun `createNewAccount success`() {
@@ -44,28 +49,6 @@ class AccountControllerIT {
         ).andExpect(status().is4xxClientError)
     }
 
-    @Test
-    fun `getAccount success`() {
-        val account = createAccount(getCreateAccountBody())
-
-        this.mockMvc.perform(
-            get("/api/account")
-                .param("document", account.document)
-        )
-            .andExpect(status().is2xxSuccessful)
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.id").value(account.id.toString()))
-            .andExpect(jsonPath("$.amount").value(0))
-    }
-
-    @Test
-    fun `getAccount without document return 400`() {
-
-        this.mockMvc.perform(
-            get("/api/account")
-        )
-            .andExpect(status().is4xxClientError)
-    }
 
     @Test
     fun `deposit success`() {
@@ -79,34 +62,6 @@ class AccountControllerIT {
             .andExpect(jsonPath("$.document").value(account.document!!))
     }
 
-    @Test
-    fun `getExtract success`() {
-        val account = createAccount(getCreateAccountBody())
-
-        this.mockMvc.perform(
-            get("/api/account/${account.id.toString()}/extract")
-        ).andExpect(status().is2xxSuccessful)
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-    }
-
-    @Test
-    fun `transfer success`() {
-        val payer = createAccount(getCreateAccountBody())
-        val receiver = createAccount(getCreateAccountBody())
-
-        doDeposit(payer, getAmount())
-
-        this.mockMvc.perform(
-            put("/api/account/${payer.id.toString()}/transfer")
-                .content(getTransfer(receiver.id.toString()))
-                .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().is2xxSuccessful)
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.id").value(payer.id.toString()))
-            .andExpect(jsonPath("$.amount").value(0))
-            .andExpect(jsonPath("$.document").value(payer.document!!))
-    }
 
     fun doDeposit(account: Account, payload: String) = this.mockMvc.perform(
         put("/api/account/${account.id.toString()}/deposit")
@@ -115,12 +70,16 @@ class AccountControllerIT {
     ).andExpect(status().is2xxSuccessful)
 
     private fun createAccount(payload: String): Account {
-        return this.mockMvc.perform(
+        val account = this.mockMvc.perform(
             post("/api/account")
                 .content(payload)
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().is2xxSuccessful)
             .andReturn().response.contentAsString.jsonToObject(Account::class.java)
+
+        accountService.updateStatus(account.id!!, AccountStatus.CREATED)
+
+        return account
     }
 
 

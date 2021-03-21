@@ -1,4 +1,4 @@
-package br.com.ronistone.stonebank.service.commons
+package br.com.ronistone.stonebank.commons
 
 import java.lang.RuntimeException
 

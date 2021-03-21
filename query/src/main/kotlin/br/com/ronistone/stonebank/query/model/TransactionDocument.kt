@@ -12,7 +12,7 @@ import java.util.Date
 import java.util.UUID
 
 @Document(indexName = "transaction")
-class Transaction(
+class TransactionDocument(
 
         @Id
         val id: UUID? = null,
@@ -24,19 +24,30 @@ class Transaction(
         val status: TransactionStatus? = null,
 
         val amount: BigDecimal? = null,
-        val receiver: Account? = null,
-        val payer: Account? = null,
+        val receiver: AccountDocument? = null,
+        val payer: AccountDocument? = null,
         val createdAt: Date? = null,
         val updatedAt: Date? = null
 )
 
-fun Transaction.toDocument() = Transaction(
+fun Transaction.toDocument() = TransactionDocument(
         id = this.id,
         type = this.type,
         status = this.status,
         amount = this.amount,
         receiver = this.receiver?.toDocument(),
         payer = this.payer?.toDocument(),
+        createdAt = this.createdAt,
+        updatedAt = this.updatedAt
+)
+
+fun TransactionDocument.toDomain() = Transaction(
+        id = this.id,
+        type = this.type,
+        status = this.status,
+        amount = this.amount,
+        receiver = this.receiver?.toDomain(),
+        payer = this.payer?.toDomain(),
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
 )

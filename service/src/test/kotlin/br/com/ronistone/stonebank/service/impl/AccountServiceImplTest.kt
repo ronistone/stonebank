@@ -6,10 +6,10 @@ import br.com.ronistone.stonebank.entity.TransactionEntity
 import br.com.ronistone.stonebank.repository.AccountRepository
 import br.com.ronistone.stonebank.repository.CustomerRepository
 import br.com.ronistone.stonebank.service.TransactionService
-import br.com.ronistone.stonebank.service.Utils.Companion.any
-import br.com.ronistone.stonebank.service.Utils.Companion.eq
-import br.com.ronistone.stonebank.service.commons.Error
-import br.com.ronistone.stonebank.service.commons.ValidationException
+import br.com.ronistone.stonebank.commons.Utils.Companion.any
+import br.com.ronistone.stonebank.commons.Utils.Companion.eq
+import br.com.ronistone.stonebank.commons.Error
+import br.com.ronistone.stonebank.commons.ValidationException
 import org.assertj.core.api.Assertions.assertThat
 import org.camunda.bpm.engine.RuntimeService
 import org.junit.jupiter.api.Test
@@ -30,31 +30,6 @@ class AccountServiceImplTest {
         const val DOCUMENT = "document number"
     }
 
-    @Test
-    fun `getAccountByDocument invalid document throw exception`() {
-        val accountService = accountServiceImpl()
-
-        try {
-            accountService.getAccountByDocument(null)
-            fail("Expected validation exception")
-        } catch (ex: ValidationException) {
-            assertThat(ex.errors)
-                .hasSize(1)
-                .contains(Error.DOCUMENT_INVALID)
-        }
-    }
-
-    @Test
-    fun `getAccountByDocument success`() {
-        val accountRepository = mock(AccountRepository::class.java)
-        val accountService = accountServiceImpl(accountRepository = accountRepository)
-
-        `when`(accountRepository.findByCustomerDocument(anyString()))
-            .thenReturn(AccountEntity(id = UUID.randomUUID()))
-
-        accountService.getAccountByDocument(DOCUMENT)
-        verify(accountRepository, times(1)).findByCustomerDocument(anyString())
-    }
 
     @Test
     fun `createCustomer with invalid informations throw exception`() {
@@ -109,104 +84,6 @@ class AccountServiceImplTest {
 
         verify(accountRepository, times(1)).save(any(AccountEntity::class.java))
         verify(customerRepository, times(1)).save(any(CustomerEntity::class.java))
-    }
-
-    @Test
-    fun  `getBalance account not found throw exception`() {
-        val accountRepository = mock(AccountRepository::class.java)
-        val accountService = accountServiceImpl(accountRepository = accountRepository)
-
-        `when`(accountRepository.findById(any(UUID::class.java)))
-            .thenReturn(Optional.empty())
-
-        try {
-            accountService.getBalance(UUID.randomUUID())
-            fail("Expected validation exception")
-        } catch (ex: ValidationException) {
-            assertThat(ex.errors)
-                .hasSize(1)
-                .contains(Error.ACCOUNT_NOT_FOUND)
-        }
-    }
-
-    @Test
-    fun  `getBalance account found success`() {
-        val accountRepository = mock(AccountRepository::class.java)
-        val accountService = accountServiceImpl(accountRepository = accountRepository)
-
-        val accountId = UUID.randomUUID()
-        `when`(accountRepository.findById(any(UUID::class.java)))
-            .thenReturn(Optional.of(AccountEntity(id = accountId, amount = BigDecimal.ONE)))
-
-        val account = accountService.getBalance(accountId)
-
-        verify(accountRepository, times(1)).findById(any(UUID::class.java))
-        assertThat(account)
-            .isNotNull
-            .hasFieldOrPropertyWithValue("amount", BigDecimal.ONE)
-            .hasFieldOrPropertyWithValue("id", accountId)
-
-    }
-
-    @Test
-    fun  `getExtract account not found throw exception`() {
-        val accountRepository = mock(AccountRepository::class.java)
-        val accountService = accountServiceImpl(accountRepository = accountRepository)
-
-        `when`(accountRepository.findById(any(UUID::class.java)))
-            .thenReturn(Optional.empty())
-
-        try {
-            accountService.getExtract(UUID.randomUUID())
-            fail("Expected validation exception")
-        } catch (ex: ValidationException) {
-            assertThat(ex.errors)
-                .hasSize(1)
-                .contains(Error.ACCOUNT_NOT_FOUND)
-        }
-    }
-
-    @Test
-    fun  `getExtract trasaction return null throw exception`() {
-        val accountRepository = mock(AccountRepository::class.java)
-        val transactionService = mock(TransactionService::class.java)
-        val accountService = accountServiceImpl(accountRepository = accountRepository, transactionService = transactionService)
-
-        val accountId = UUID.randomUUID()
-        `when`(accountRepository.findById(any(UUID::class.java)))
-            .thenReturn(Optional.of(AccountEntity(id = accountId, amount = BigDecimal.ONE)))
-        `when`(transactionService.getExtract(any(AccountEntity::class.java)))
-            .thenReturn(null)
-
-        try {
-            accountService.getExtract(accountId)
-            fail("Expected validation exception")
-        } catch (ex: ValidationException) {
-            assertThat(ex.errors)
-                .hasSize(1)
-                .contains(Error.TRANSACTIONS_NOT_FOUND)
-        }
-    }
-
-    @Test
-    fun  `getExtract account found success`() {
-        val accountRepository = mock(AccountRepository::class.java)
-        val transactionService = mock(TransactionService::class.java)
-        val accountService = accountServiceImpl(accountRepository = accountRepository, transactionService = transactionService)
-
-        val accountId = UUID.randomUUID()
-        `when`(accountRepository.findById(any(UUID::class.java)))
-            .thenReturn(Optional.of(AccountEntity(id = accountId, amount = BigDecimal.ONE)))
-        `when`(transactionService.getExtract(any(AccountEntity::class.java)))
-            .thenReturn(listOf(TransactionEntity()))
-
-        val account = accountService.getExtract(accountId)
-
-        verify(accountRepository, times(1)).findById(any(UUID::class.java))
-        assertThat(account)
-            .isNotNull
-            .hasSize(1)
-
     }
 
     @Test

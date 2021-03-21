@@ -1,4 +1,4 @@
-package br.com.ronistone.stonebank.service.commons
+package br.com.ronistone.stonebank.commons
 
 class Error(
     val message: String,
@@ -28,6 +28,11 @@ class Error(
             4009
         )
 
+        val ACCOUNT_ID_INVALID = Error(
+            "account id invalid",
+            40010
+        )
+
         val ACCOUNT_RECEIVER_NOT_FOUND = Error(
             "Account of receiver not found",
             4104
@@ -39,6 +44,10 @@ class Error(
 
         val TRANSACTIONS_INVALID = Error(
             "Transactions invalid", 4015
+        )
+
+        val TRANSACTION_ID_INVALID = Error(
+            "Transaction Id invalid", 4016
         )
 
         val INSUFFICIENT_FUNDS = Error(
